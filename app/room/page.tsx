@@ -2,6 +2,9 @@ import { db } from "@/lib/db";
 
 import { redirect } from "next/navigation";
 
+import Header from "@/components/header";
+import Room from "@/components/room";
+
 export default async function Page({
   searchParams,
 }: {
@@ -25,7 +28,8 @@ export default async function Page({
 
   return (
     <div>
-      <h1>Room</h1>
+      <Header />
+      <Room roomCode={roomCode as string} />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { Roboto } from "next/font/google";
 import "./globals.css";
 
 import { Toaster } from "@/components/ui/sonner";
+import { SocketContextProvider } from "@/providers/socket-provider";
 
 const roboto = Roboto({
   display: "swap",
@@ -23,8 +24,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={roboto.className}>
-        {children}
-        <Toaster />
+        <SocketContextProvider>
+          {children}
+          <Toaster />
+        </SocketContextProvider>
       </body>
     </html>
   );
