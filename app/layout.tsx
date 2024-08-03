@@ -2,7 +2,13 @@ import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
 
-const roboto = Roboto({ display: "swap", weight: ["400", "700"], subsets: ["latin"] });
+import { Toaster } from "@/components/ui/sonner";
+
+const roboto = Roboto({
+  display: "swap",
+  weight: ["400", "700"],
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
   title: "drawit",
@@ -16,7 +22,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={roboto.className}>{children}</body>
+      <body className={roboto.className}>
+        {children}
+        <Toaster />
+      </body>
     </html>
   );
 }

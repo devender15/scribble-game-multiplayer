@@ -4,6 +4,8 @@ import CustomizePlayer from "./customize-player";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { toast } from "sonner";
+
 import { useUserStore } from "@/stores/user-store";
 
 import createRoom from "@/actions/create-room";
@@ -21,8 +23,20 @@ export default function GameMode() {
   };
 
   const handleCreateRoom = async () => {
-    const roomCode = await createRoom(name);
-    router.push(`/room?code=${roomCode}`);
+    try {
+      const roomCode = await createRoom(name);
+      router.push(`/room?code=${roomCode}`);
+      toast("room created!", {
+        action: {
+          label: "okay",
+          onClick: () => {
+            toast.dismiss();
+          },
+        },
+      });
+    } catch (error: any) {
+      toast(error);
+    }
   };
 
   return (
