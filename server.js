@@ -29,7 +29,7 @@ app.prepare().then(() => {
       socket.join(roomCode);
 
       io.to(roomCode).emit("newUserJoined", {
-        name: username,
+        newName: username,
       });
     });
 

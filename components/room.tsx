@@ -16,8 +16,9 @@ export default function Room({ roomCode }: { roomCode: string }) {
 
     socket.emit("add-user", { roomCode, username: name });
 
-    socket.on("newUserJoined", ({ name }: { name: string }) => {
-      const user = name === name ? "You" : name;
+    socket.on("newUserJoined", ({ newName }: { newName: string }) => {
+      const user = name === newName ? "You" : newName;
+
       toast(`${user} joined the room`);
     });
 

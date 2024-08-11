@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { toast } from "sonner";
+import { Separator } from "@/components/ui/separator"
 
 import { useUserStore } from "@/stores/user-store";
 
@@ -43,9 +44,14 @@ export default function GameMode() {
   return (
     <div className="w-full h-full space-y-10">
       <CustomizePlayer />
+
+      <div className="w-full flex items-center">
+        X <Separator className="w-full bg-pink-600" /> X
+      </div>
+
       <div className="flex gap-x-8 items-center w-full h-52 text-pink-800">
         {mode === "join" ? (
-          <JoinRoom />
+          <JoinRoom setMode={setMode} />
         ) : (
           <>
             {" "}

@@ -12,13 +12,15 @@ model User {
   id   String @id @default(uuid())
   name String @unique
 
-  roomId String? @unique
+  roomId String? 
   room   Room?   @relation("UserRoom", fields: [roomId], references: [id], onDelete: Restrict, onUpdate: Restrict)
 
   adminRoom Room? @relation("RoomAdmin")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([roomId])
 }
 
 model Room {
