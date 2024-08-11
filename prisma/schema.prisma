@@ -10,7 +10,7 @@ datasource db {
 
 model User {
   id   String @id @default(uuid())
-  name String
+  name String @unique
 
   roomId String? @unique
   room   Room?   @relation("UserRoom", fields: [roomId], references: [id], onDelete: Restrict, onUpdate: Restrict)
