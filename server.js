@@ -1,7 +1,7 @@
 import { createServer } from "http";
 import next from "next";
 import { Server } from "socket.io";
-import { handleSocketEvents } from "./lib/socket-events";
+// import { handleSocketEvents } from "./lib/socket-events";
 
 const dev = process.env.NODE_ENV !== "production";
 
@@ -21,7 +21,29 @@ app.prepare().then(() => {
   io.on("connection", (socket) => {
     console.log("a user connected");
 
-    handleSocketEvents(socket, io);
+    // handleSocketEvents(socket, io);
+
+    socket.on("add-user", (data) => {
+      const { roomCode, username } = data;
+
+      socket.join(roomCode);
+
+      io.to(roomCode).emit("newUserJoined", {
+        name: username,
+      });
+    });
+
+    socket.on("remove-user", (data) => {
+      const { roomCode, username } = data;
+
+      console.log("remove-user ", username);
+
+      socket.leave(roomCode);
+
+      io.to(roomCode).emit("userLeft", {
+        message: `${username} has left the room`,
+      });
+    });
 
     socket.on("disconnect", () => {
       console.log("user disconnected");
