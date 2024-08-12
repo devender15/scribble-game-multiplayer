@@ -2,9 +2,9 @@
 
 import { db } from "@/lib/db";
 
-export default async function deleteUser({ username }: { username: string }) {
+export default async function deleteUser(name: string) {
   const user = await db.user.findUnique({
-    where: { name: username },
+    where: { name },
   });
 
   if (!user) {
@@ -12,7 +12,7 @@ export default async function deleteUser({ username }: { username: string }) {
   }
 
   await db.user.delete({
-    where: { name: username },
+    where: { name },
   });
 
   return { message: "User deleted successfully" };

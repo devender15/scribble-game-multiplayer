@@ -36,8 +36,6 @@ app.prepare().then(() => {
     socket.on("remove-user", (data) => {
       const { roomCode, username } = data;
 
-      console.log("remove-user ", username);
-
       socket.leave(roomCode);
 
       io.to(roomCode).emit("userLeft", {

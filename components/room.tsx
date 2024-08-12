@@ -4,12 +4,18 @@ import React, { useEffect } from "react";
 
 import { useUserStore } from "@/stores/user-store";
 import { useSocket } from "@/providers/socket-provider";
+import deleteUser from "@/actions/delete-user";
+import { redirect } from "next/navigation";
 
 import { toast } from "sonner";
 
 export default function Room({ roomCode }: { roomCode: string }) {
   const { name } = useUserStore();
   const { socket } = useSocket();
+
+  useEffect(() => {
+    if (!name) redirect("/");
+  }, [name]);
 
   useEffect(() => {
     if (!socket) return;
@@ -26,10 +32,21 @@ export default function Room({ roomCode }: { roomCode: string }) {
       toast(message);
     });
 
-    return () => {
+    const handleUserLeave = () => {
       socket.emit("remove-user", { roomCode, username: name });
+
+      deleteUser(name).catch((error) => {
+        toast(error.message);
+      });
     };
-  }, [socket, name]);
+
+    window.addEventListener("beforeunload", handleUserLeave);
+
+    return () => {
+      // handleUserLeave();
+      window.removeEventListener("beforeunload", handleUserLeave);
+    };
+  }, [socket, name, roomCode]);
 
   return (
     <div>
