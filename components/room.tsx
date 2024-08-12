@@ -8,6 +8,7 @@ import deleteUser from "@/actions/delete-user";
 import { redirect } from "next/navigation";
 
 import { toast } from "sonner";
+import DrawingCanvas from "./canvas";
 
 export default function Room({ roomCode }: { roomCode: string }) {
   const { name } = useUserStore();
@@ -50,7 +51,8 @@ export default function Room({ roomCode }: { roomCode: string }) {
 
   return (
     <div>
-      <h1>Room</h1>
+      <p>Room Code: {roomCode}</p>
+      <DrawingCanvas roomCode={roomCode} />
     </div>
   );
 }

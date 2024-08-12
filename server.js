@@ -33,6 +33,19 @@ app.prepare().then(() => {
       });
     });
 
+    socket.on("drawing", (data) => {
+      const { roomCode, x0, y0, x1, y1 } = data;
+
+      console.log(roomCode, x0, y0, x1, y1);
+
+      socket.to(roomCode).emit("drawing", {
+        x0,
+        y0,
+        x1,
+        y1,
+      });
+    });
+
     socket.on("remove-user", (data) => {
       const { roomCode, username } = data;
 
