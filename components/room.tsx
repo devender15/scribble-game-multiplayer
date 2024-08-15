@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 import { useUserStore } from "@/stores/user-store";
 import { useSocket } from "@/providers/socket-provider";
@@ -9,14 +9,16 @@ import { redirect } from "next/navigation";
 
 import { toast } from "sonner";
 import DrawingCanvas from "./canvas";
+import Chatbar from "./chatbar";
+import GameBar from "./game-bar";
 
 export default function Room({ roomCode }: { roomCode: string }) {
   const { name } = useUserStore();
   const { socket } = useSocket();
 
-  useEffect(() => {
-    if (!name) redirect("/");
-  }, [name]);
+  // useEffect(() => {
+  //   if (!name) redirect("/");
+  // }, [name]);
 
   useEffect(() => {
     if (!socket) return;
@@ -50,14 +52,16 @@ export default function Room({ roomCode }: { roomCode: string }) {
   }, [socket, name, roomCode]);
 
   return (
-    <div className="p-6 max-h-screen overflow-hidden">
-      <p className="my-4">Room Code: {roomCode}</p>
-      <section className="grid grid-cols-4 gap-3">
+    <div className="max-h-screen overflow-hidden space-y-4">
+      <GameBar roomCode={roomCode} />
+      <section className="grid grid-cols-4 gap-3 px-4">
         <div></div>
         <div className="border w-full mx-auto shadow-md h-[60%] col-span-2">
           <DrawingCanvas roomCode={roomCode} />
         </div>
-        <div></div>
+        <div>
+          <Chatbar />
+        </div>
       </section>
     </div>
   );
