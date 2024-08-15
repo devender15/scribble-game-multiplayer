@@ -50,9 +50,15 @@ export default function Room({ roomCode }: { roomCode: string }) {
   }, [socket, name, roomCode]);
 
   return (
-    <div>
-      <p>Room Code: {roomCode}</p>
-      <DrawingCanvas roomCode={roomCode} />
+    <div className="p-6 max-h-screen overflow-hidden">
+      <p className="my-4">Room Code: {roomCode}</p>
+      <section className="grid grid-cols-4 gap-3">
+        <div></div>
+        <div className="border w-full mx-auto shadow-md h-[60%] col-span-2">
+          <DrawingCanvas roomCode={roomCode} />
+        </div>
+        <div></div>
+      </section>
     </div>
   );
 }

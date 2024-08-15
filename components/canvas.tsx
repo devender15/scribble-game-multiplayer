@@ -11,40 +11,40 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
+  
+  const drawingQueue = useRef<{ x0: number; y0: number; x1: number; y1: number }[]>([]);
+  
 
   useEffect(() => {
     if (!socket) return;
 
     const canvas = canvasRef.current;
     if (canvas) {
-      canvas.width = window.innerWidth / 2;
-      canvas.height = window.innerHeight / 2;
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
       const ctx = canvas.getContext("2d");
       setContext(ctx);
+
+      drawingQueue.current.forEach(({ x0, y0, x1, y1 }) => {
+        drawLine(x0, y0, x1, y1, false);
+      });
+      drawingQueue.current = []; 
     }
 
-    socket.on(
-      "drawing",
-      ({
-        x0: x0,
-        y0: y0,
-        x1: x1,
-        y1: y1,
-      }: {
-        x0: number;
-        y0: number;
-        x1: number;
-        y1: number;
-      }) => {
+    socket.on("drawing", ({ x0, y0, x1, y1 }: { x0: number; y0: number; x1: number; y1: number }) => {
+      console.log("Received drawing data:", { x0, y0, x1, y1 });
+      if (context) {
         drawLine(x0, y0, x1, y1, false);
-        console.log("drawing");
+      } else {
+        console.warn("Context not ready, queuing drawing data");
+        drawingQueue.current.push({ x0, y0, x1, y1 });
       }
-    );
+    });
 
     return () => {
       socket.off("drawing");
     };
-  }, [socket]);
+  }, [socket, context]);
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
     setIsDrawing(true);
@@ -53,7 +53,11 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
 
   const endDrawing = () => {
     setIsDrawing(false);
-    context?.beginPath();
+    if (context) {
+      context.beginPath();
+    } else {
+      console.warn("Context not available when ending drawing");
+    }
   };
 
   const draw = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
@@ -66,24 +70,23 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
 
       drawLine(x, y, x, y);
 
-      socket?.emit("drawing", {
+      socket.emit("drawing", {
         roomCode,
         x0: x,
         y0: y,
         x1: x,
         y1: y,
       });
+    } else {
+      console.error("Canvas rect not available");
     }
   };
 
-  const drawLine = (
-    x0: number,
-    y0: number,
-    x1: number,
-    y1: number,
-    emit = true
-  ) => {
-    if (!context) return;
+  const drawLine = (x0: number, y0: number, x1: number, y1: number, emit = true) => {
+    if (!context) {
+      console.error("Context is not available when drawing line");
+      return;
+    }
 
     context.strokeStyle = "black";
     context.lineWidth = 2;
@@ -95,9 +98,10 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
     context.stroke();
     context.closePath();
 
-    if (!emit) return;
+    if (emit) {
+      socket.emit("drawing", { roomCode, x0, y0, x1, y1 });
+    }
   };
-
   return (
     <canvas
       ref={canvasRef}

@@ -18,6 +18,8 @@ app.prepare().then(() => {
 
   const io = new Server(server);
 
+  const rooms = {};
+
   io.on("connection", (socket) => {
     console.log("a user connected");
 
@@ -28,6 +30,12 @@ app.prepare().then(() => {
 
       socket.join(roomCode);
 
+      if (rooms[roomCode]) {
+        rooms[roomCode].forEach((drawEvent) => {
+          socket.emit("drawing", drawEvent);
+        });
+      }
+
       io.to(roomCode).emit("newUserJoined", {
         newName: username,
       });
@@ -36,7 +44,16 @@ app.prepare().then(() => {
     socket.on("drawing", (data) => {
       const { roomCode, x0, y0, x1, y1 } = data;
 
-      console.log(roomCode, x0, y0, x1, y1);
+      if (!rooms[roomCode]) {
+        rooms[roomCode] = [];
+      }
+
+      rooms[roomCode].push({
+        x0,
+        y0,
+        x1,
+        y1,
+      });
 
       socket.to(roomCode).emit("drawing", {
         x0,
