@@ -20,10 +20,10 @@ app.prepare().then(() => {
 
   const rooms = {};
 
+  const scores = {};
+
   io.on("connection", (socket) => {
     console.log("a user connected");
-
-    // handleSocketEvents(socket, io);
 
     socket.on("add-user", (data) => {
       const { roomCode, username } = data;
@@ -36,9 +36,21 @@ app.prepare().then(() => {
         });
       }
 
+      if (!scores[username]) {
+        scores[username] = 0;
+      }
+
       io.to(roomCode).emit("newUserJoined", {
         newName: username,
       });
+    });
+
+    socket.on("get-scores", (data) => {
+      const { roomCode } = data;
+
+      console.log(roomCode, scores);
+
+      io.to(roomCode).emit("receive-scores", scores);
     });
 
     socket.on("drawing", (data) => {
@@ -71,6 +83,10 @@ app.prepare().then(() => {
 
     socket.on("remove-user", (data) => {
       const { roomCode, username } = data;
+
+      if (scores[username]) {
+        delete scores[username];
+      }
 
       socket.leave(roomCode);
 

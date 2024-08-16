@@ -6,11 +6,13 @@ import { useUserStore } from "@/stores/user-store";
 import { useSocket } from "@/providers/socket-provider";
 import deleteUser from "@/actions/delete-user";
 import { redirect } from "next/navigation";
+import { handleFetchRoomUsers } from "@/lib/utils";
 
 import { toast } from "sonner";
 import DrawingCanvas from "./canvas";
 import Chatbar from "./chatbar";
 import GameBar from "./game-bar";
+import PlayersRank from "./players-rank";
 
 export default function Room({ roomCode }: { roomCode: string }) {
   const { name } = useUserStore();
@@ -54,9 +56,11 @@ export default function Room({ roomCode }: { roomCode: string }) {
   return (
     <div className="h-[85%] max-h-[85%] w-full overflow-hidden space-y-4">
       <GameBar roomCode={roomCode} />
-      <section className="grid grid-cols-4 gap-3 px-4 h-full">
-        <div></div>
-        <div className="border w-full mx-auto shadow-md h-[70%] col-span-2 mt-8">
+      <section className="grid grid-cols-4 gap-3 px-4 h-[calc(100vh-12rem)]">
+        <div>
+          <PlayersRank roomCode={roomCode} />
+        </div>
+        <div className="border w-full mx-auto shadow-md h-[70%] col-span-2">
           <DrawingCanvas roomCode={roomCode} />
         </div>
         <div className="h-full w-full">
