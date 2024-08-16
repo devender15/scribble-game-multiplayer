@@ -21,7 +21,17 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
     const canvas = canvasRef.current;
     if (canvas) {
       const ctx = canvas.getContext("2d");
-      setContext(ctx);
+      const ratio = window.devicePixelRatio || 1;
+
+      canvas.width = canvas.offsetWidth * ratio;
+      canvas.height = canvas.offsetHeight * ratio;
+      canvas.style.width = "100%";
+      canvas.style.height = "100%";
+
+      if(ctx) {
+        ctx.scale(ratio, ratio);
+        setContext(ctx);
+      }
 
       drawingQueue.current.forEach(({ x0, y0, x1, y1 }) => {
         drawLine(x0, y0, x1, y1, false);
