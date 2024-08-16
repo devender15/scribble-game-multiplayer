@@ -6,9 +6,17 @@ type UserStore = {
   errorMessage: string;
   setErrorMessage: (message: string) => void;
   validationStatus: "loading" | "success" | "error" | "idle";
-  setValidationStatus: (status: "loading" | "success" | "error" | "idle") => void;
+  setValidationStatus: (
+    status: "loading" | "success" | "error" | "idle"
+  ) => void;
   debouncedName: string;
   setDebouncedName: (name: string) => void;
+  chatMessages: { username: string; message: string; type: "text" | "leave" | "join" }[];
+  setChatMessages: (
+    messages: { username: string; message: string; type: "text" | "leave" | "join" }[]
+  ) => void;
+  message: string;
+  setMessage: (message: string) => void;
 };
 
 export const useUserStore = create<UserStore>((set) => ({
@@ -20,4 +28,8 @@ export const useUserStore = create<UserStore>((set) => ({
   setValidationStatus: (status) => set({ validationStatus: status }),
   debouncedName: "",
   setDebouncedName: (name) => set({ debouncedName: name }),
+  chatMessages: [],
+  setChatMessages: (messages) => set({ chatMessages: messages }),
+  message: "",
+  setMessage: (message) => set({ message }),
 }));

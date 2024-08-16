@@ -18,11 +18,11 @@ export default function GameBar({ roomCode }: GameBarProps) {
 
     setTimeout(() => {
       setCopied(false);
-    }, 2000);
+    }, 1000);
   };
 
   return (
-    <div className="bg-pink-300/50 w-full h-full p-2">
+    <div className="bg-pink-300/50 w-full h-16 p-2">
       <p className="my-1 flex items-center gap-x-4 p-2 bg-pink-100 rounded-full w-fit text-xs">
         Code:{" "}
         <span className="flex items-center gap-x-2 text-purple-900">

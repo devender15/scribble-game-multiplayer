@@ -52,15 +52,15 @@ export default function Room({ roomCode }: { roomCode: string }) {
   }, [socket, name, roomCode]);
 
   return (
-    <div className="max-h-screen overflow-hidden space-y-4">
+    <div className="h-[85%] max-h-[85%] w-full overflow-hidden space-y-4">
       <GameBar roomCode={roomCode} />
-      <section className="grid grid-cols-4 gap-3 px-4">
+      <section className="grid grid-cols-4 gap-3 px-4 h-full">
         <div></div>
-        <div className="border w-full mx-auto shadow-md h-[60%] col-span-2">
+        <div className="border w-full mx-auto shadow-md h-[70%] col-span-2 mt-8">
           <DrawingCanvas roomCode={roomCode} />
         </div>
-        <div>
-          <Chatbar />
+        <div className="h-full w-full">
+          <Chatbar roomCode={roomCode} username={name} />
         </div>
       </section>
     </div>

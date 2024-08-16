@@ -63,6 +63,12 @@ app.prepare().then(() => {
       });
     });
 
+    socket.on("send-msg", (data) => {
+      const { roomCode, username, message } = data;
+
+      io.to(roomCode).emit("receive-msg", { username, message });
+    });
+
     socket.on("remove-user", (data) => {
       const { roomCode, username } = data;
 

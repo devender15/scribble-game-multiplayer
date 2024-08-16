@@ -1,0 +1,1 @@
+export type chatMessages = { username: string; message: string; type: "text" | "join" | "leave" | "guess"; }[];
