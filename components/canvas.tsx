@@ -20,8 +20,6 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
 
     const canvas = canvasRef.current;
     if (canvas) {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
       const ctx = canvas.getContext("2d");
       setContext(ctx);
 
@@ -109,6 +107,7 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
       onMouseUp={endDrawing}
       onMouseOut={endDrawing}
       onMouseMove={draw}
+      className="w-full h-full block"
     />
   );
 }
