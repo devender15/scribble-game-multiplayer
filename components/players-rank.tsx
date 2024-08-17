@@ -24,7 +24,7 @@ type Scores = Record<string, number>;
 
 export default function PlayersRank({ roomCode }: PlayersRankProps) {
 
-  const { roomUsers, setRoomUsers } = useUserStore();
+  const { roomUsers, setRoomUsers, name } = useUserStore();
 
   const [players, setPlayers] = useState<PlayerRanking>([]);
   const [scores, setScores] = useState<Scores>({});
@@ -41,7 +41,7 @@ export default function PlayersRank({ roomCode }: PlayersRankProps) {
 
       return {
         id: user.id,
-        name: user.name,
+        name: user.name + (user.name === name ? " ( you )" : ""),
         score,
       };
     });
