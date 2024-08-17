@@ -1,7 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { User } from "@prisma/client";
-import { Dispatch, SetStateAction } from "react";
 import fetchRoomUsers from "@/actions/fetch-room-users";
 
 export function cn(...inputs: ClassValue[]) {
@@ -20,7 +19,7 @@ export function generateRoomCode() {
 
 export async function handleFetchRoomUsers(
   roomCode: string,
-  setRoomUsers: Dispatch<SetStateAction<User[]>>
+  setRoomUsers: (users: User[]) => void
 ) {
   try {
     const roomUsers = await fetchRoomUsers(roomCode);

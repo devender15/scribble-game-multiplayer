@@ -15,7 +15,7 @@ import GameBar from "./game-bar";
 import PlayersRank from "./players-rank";
 
 export default function Room({ roomCode }: { roomCode: string }) {
-  const { name } = useUserStore();
+  const { name, setRoomUsers } = useUserStore();
   const { socket } = useSocket();
 
   // useEffect(() => {
@@ -31,6 +31,8 @@ export default function Room({ roomCode }: { roomCode: string }) {
       const user = name === newName ? "You" : newName;
 
       toast(`${user} joined the room`);
+
+      handleFetchRoomUsers(roomCode, setRoomUsers);
     });
 
     socket.on("userLeft", ({ message }: { message: string }) => {

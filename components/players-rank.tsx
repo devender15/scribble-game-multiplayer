@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 
 import { UserRound } from "lucide-react";
 import { motion as m } from "framer-motion";
+
 import { useSocket } from "@/providers/socket-provider";
+import { useUserStore } from "@/stores/user-store";
 
 import { handleFetchRoomUsers } from "@/lib/utils";
 
@@ -21,8 +23,10 @@ type PlayersRankProps = {
 type Scores = Record<string, number>;
 
 export default function PlayersRank({ roomCode }: PlayersRankProps) {
+
+  const { roomUsers, setRoomUsers } = useUserStore();
+
   const [players, setPlayers] = useState<PlayerRanking>([]);
-  const [roomUsers, setRoomUsers] = useState<User[]>([]);
   const [scores, setScores] = useState<Scores>({});
 
   const { socket } = useSocket();

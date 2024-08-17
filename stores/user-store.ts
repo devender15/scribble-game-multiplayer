@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { User } from "@prisma/client";
 
 type UserStore = {
   name: string;
@@ -11,12 +12,10 @@ type UserStore = {
   ) => void;
   debouncedName: string;
   setDebouncedName: (name: string) => void;
-  chatMessages: { username: string; message: string; type: "text" | "leave" | "join" }[];
-  setChatMessages: (
-    messages: { username: string; message: string; type: "text" | "leave" | "join" }[]
-  ) => void;
   message: string;
   setMessage: (message: string) => void;
+  roomUsers: User[];
+  setRoomUsers: (users: User[]) => void;
 };
 
 export const useUserStore = create<UserStore>((set) => ({
@@ -28,8 +27,8 @@ export const useUserStore = create<UserStore>((set) => ({
   setValidationStatus: (status) => set({ validationStatus: status }),
   debouncedName: "",
   setDebouncedName: (name) => set({ debouncedName: name }),
-  chatMessages: [],
-  setChatMessages: (messages) => set({ chatMessages: messages }),
   message: "",
   setMessage: (message) => set({ message }),
+  roomUsers: [],
+  setRoomUsers: (users) => set({ roomUsers: users }),
 }));
