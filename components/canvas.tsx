@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState } from "react";
 import { useSocket } from "@/providers/socket-provider";
+import { useUserStore } from "@/stores/user-store";
 
 type DrawingCanvasProps = {
   roomCode: string;
@@ -7,13 +8,17 @@ type DrawingCanvasProps = {
 
 export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
   const { socket } = useSocket();
+  const { name } = useUserStore();
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
-  
-  const drawingQueue = useRef<{ x0: number; y0: number; x1: number; y1: number }[]>([]);
-  
+  const [canDraw, setCanDraw] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(60);
+
+  const drawingQueue = useRef<
+    { x0: number; y0: number; x1: number; y1: number }[]
+  >([]);
 
   useEffect(() => {
     if (!socket) return;
@@ -28,7 +33,7 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
       canvas.style.width = "100%";
       canvas.style.height = "100%";
 
-      if(ctx) {
+      if (ctx) {
         ctx.scale(ratio, ratio);
         setContext(ctx);
       }
@@ -36,21 +41,43 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
       drawingQueue.current.forEach(({ x0, y0, x1, y1 }) => {
         drawLine(x0, y0, x1, y1, false);
       });
-      drawingQueue.current = []; 
+      drawingQueue.current = [];
     }
 
-    socket.on("drawing", ({ x0, y0, x1, y1 }: { x0: number; y0: number; x1: number; y1: number }) => {
-      console.log("Received drawing data:", { x0, y0, x1, y1 });
-      if (context) {
-        drawLine(x0, y0, x1, y1, false);
-      } else {
-        console.warn("Context not ready, queuing drawing data");
-        drawingQueue.current.push({ x0, y0, x1, y1 });
-      }
+    socket.on("currentDrawer", ({ username: drawer }: { username: string }) => {
+      setCanDraw(drawer === socket.id);
     });
+
+    socket.on("countdown", ({ timeLeft }: { timeLeft: number }) => {
+      setTimeLeft(timeLeft);
+    });
+
+    socket.on(
+      "drawing",
+      ({
+        x0,
+        y0,
+        x1,
+        y1,
+      }: {
+        x0: number;
+        y0: number;
+        x1: number;
+        y1: number;
+      }) => {
+        if (context) {
+          drawLine(x0, y0, x1, y1, false);
+        } else {
+          console.warn("Context not ready, queuing drawing data");
+          drawingQueue.current.push({ x0, y0, x1, y1 });
+        }
+      }
+    );
 
     return () => {
       socket.off("drawing");
+      socket.off("countdown");
+      socket.off("currentDrawer");
     };
   }, [socket, context]);
 
@@ -69,7 +96,7 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
   };
 
   const draw = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
-    if (!isDrawing || !context) return;
+    if (!isDrawing || !context || !canDraw) return;
 
     const rect = canvasRef.current?.getBoundingClientRect();
     if (rect) {
@@ -90,7 +117,13 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
     }
   };
 
-  const drawLine = (x0: number, y0: number, x1: number, y1: number, emit = true) => {
+  const drawLine = (
+    x0: number,
+    y0: number,
+    x1: number,
+    y1: number,
+    emit = true
+  ) => {
     if (!context) {
       console.error("Context is not available when drawing line");
       return;
@@ -111,13 +144,18 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
     }
   };
   return (
-    <canvas
-      ref={canvasRef}
-      onMouseDown={startDrawing}
-      onMouseUp={endDrawing}
-      onMouseOut={endDrawing}
-      onMouseMove={draw}
-      className="w-full h-full block"
-    />
+    <div className="relative w-full h-full border">
+      <canvas
+        ref={canvasRef}
+        onMouseDown={startDrawing}
+        onMouseUp={endDrawing}
+        onMouseOut={endDrawing}
+        onMouseMove={draw}
+        className="w-full h-full block"
+      />
+      <div className="absolute top-0 right-0 bg-white bg-opacity-60 p-2 rounded-lg border">
+        <span>{timeLeft}</span>
+      </div>
+    </div>
   );
 }

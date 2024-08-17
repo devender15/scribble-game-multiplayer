@@ -45,6 +45,10 @@ export default function Room({ roomCode }: { roomCode: string }) {
       deleteUser(name).catch((error) => {
         toast(error.message);
       });
+
+      socket.disconnect();
+
+      handleFetchRoomUsers(roomCode, setRoomUsers);
     };
 
     window.addEventListener("beforeunload", handleUserLeave);

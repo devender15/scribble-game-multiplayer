@@ -22,8 +22,45 @@ app.prepare().then(() => {
 
   const scores = {};
 
+  const currentDrawer = {};
+  const countdowns = {};
+
+
   io.on("connection", (socket) => {
     console.log("a user connected");
+
+    function startRound(roomCode) {
+      let timeLeft = 60;
+      io.to(roomCode).emit("countdown", { timeLeft });
+  
+      countdowns[roomCode] = setInterval(() => {
+        timeLeft -= 1;
+        io.to(roomCode).emit("countdown", { timeLeft });
+  
+        if (timeLeft <= 0) {
+          clearInterval(countdowns[roomCode]);
+          switchDrawer(roomCode);
+        }
+      }, 1000);
+    }
+  
+    function switchDrawer(roomCode) {
+      if (rooms[roomCode]) {
+        const usersSet = io.sockets.adapter.rooms.get(roomCode);
+        if(!usersSet) return;
+        
+        const users = Array.from(usersSet);
+        console.log(users);
+        const currentIndex = users.indexOf(currentDrawer[roomCode]);
+        const nextIndex = (currentIndex + 1) % users.length;
+        currentDrawer[roomCode] = users[nextIndex];
+  
+        io.to(roomCode).emit("currentDrawer", {
+          username: currentDrawer[roomCode],
+        });
+        startRound(roomCode);
+      }
+    }
 
     socket.on("add-user", (data) => {
       const { roomCode, username } = data;
@@ -40,8 +77,17 @@ app.prepare().then(() => {
         scores[username] = 0;
       }
 
+      if (!currentDrawer[roomCode]) {
+        currentDrawer[roomCode] = socket.id;
+        startRound(roomCode);
+      }
+
       io.to(roomCode).emit("newUserJoined", {
         newName: username,
+      });
+
+      io.to(roomCode).emit("currentDrawer", {
+        username: currentDrawer[roomCode],
       });
     });
 
