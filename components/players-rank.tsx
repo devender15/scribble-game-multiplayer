@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react";
 
-import { UserRound } from "lucide-react";
+import { UserRound, Pencil, Pen } from "lucide-react";
 import { motion as m } from "framer-motion";
 
 import { useSocket } from "@/providers/socket-provider";
 import { useUserStore } from "@/stores/user-store";
+import { useRoomStore } from "@/stores/room-store";
 
 import { handleFetchRoomUsers } from "@/lib/utils";
-
-import { User } from "@prisma/client";
 
 type PlayerRanking = {
   id: string;
@@ -23,8 +22,8 @@ type PlayersRankProps = {
 type Scores = Record<string, number>;
 
 export default function PlayersRank({ roomCode }: PlayersRankProps) {
-
   const { roomUsers, setRoomUsers, name } = useUserStore();
+  const { canDraw } = useRoomStore();
 
   const [players, setPlayers] = useState<PlayerRanking>([]);
   const [scores, setScores] = useState<Scores>({});

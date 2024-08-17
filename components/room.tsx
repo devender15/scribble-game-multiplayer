@@ -4,6 +4,9 @@ import React, { useEffect, useState } from "react";
 
 import { useUserStore } from "@/stores/user-store";
 import { useSocket } from "@/providers/socket-provider";
+import { useModalStore } from "@/stores/modal-store";
+import { useRoomStore } from "@/stores/room-store";
+
 import deleteUser from "@/actions/delete-user";
 import { redirect } from "next/navigation";
 import { handleFetchRoomUsers } from "@/lib/utils";
@@ -17,6 +20,8 @@ import PlayersRank from "./players-rank";
 export default function Room({ roomCode }: { roomCode: string }) {
   const { name, setRoomUsers } = useUserStore();
   const { socket } = useSocket();
+  const { setOpen } = useModalStore();
+  const { canDraw } = useRoomStore();
 
   // useEffect(() => {
   //   if (!name) redirect("/");
@@ -58,6 +63,11 @@ export default function Room({ roomCode }: { roomCode: string }) {
       window.removeEventListener("beforeunload", handleUserLeave);
     };
   }, [socket, name, roomCode]);
+
+  useEffect(() => {
+    if (!canDraw) return;
+    setOpen("word-select");
+  }, [canDraw]);
 
   return (
     <div className="h-[85%] max-h-[85%] w-full overflow-hidden space-y-4">

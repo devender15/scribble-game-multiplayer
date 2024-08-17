@@ -1,6 +1,8 @@
 import { useRef, useEffect, useState } from "react";
+
 import { useSocket } from "@/providers/socket-provider";
 import { useUserStore } from "@/stores/user-store";
+import { useRoomStore } from "@/stores/room-store";
 
 type DrawingCanvasProps = {
   roomCode: string;
@@ -8,13 +10,13 @@ type DrawingCanvasProps = {
 
 export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
   const { socket } = useSocket();
-  const { name } = useUserStore();
+  const { canDraw, timeLeft, setCanDraw, setTimeLeft } = useRoomStore();
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
-  const [canDraw, setCanDraw] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(60);
+  // const [canDraw, setCanDraw] = useState(false);
+  // const [timeLeft, setTimeLeft] = useState(60);
 
   const drawingQueue = useRef<
     { x0: number; y0: number; x1: number; y1: number }[]
