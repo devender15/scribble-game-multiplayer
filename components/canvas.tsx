@@ -52,6 +52,15 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
       setTimeLeft(timeLeft);
     });
 
+    socket.on("clearBoard", () => {
+      if (context) {
+        context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+      } else {
+        console.warn("Context not ready, queuing clear board");
+        drawingQueue.current.push({ x0: 0, y0: 0, x1: 0, y1: 0 });
+      }
+    })
+
     socket.on(
       "drawing",
       ({
@@ -78,6 +87,8 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
       socket.off("drawing");
       socket.off("countdown");
       socket.off("currentDrawer");
+      socket.off("clearBoard");
+
     };
   }, [socket, context]);
 

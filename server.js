@@ -39,6 +39,7 @@ app.prepare().then(() => {
   
         if (timeLeft <= 0) {
           clearInterval(countdowns[roomCode]);
+          clearBoard(roomCode);
           switchDrawer(roomCode);
         }
       }, 1000);
@@ -50,7 +51,6 @@ app.prepare().then(() => {
         if(!usersSet) return;
         
         const users = Array.from(usersSet);
-        console.log(users);
         const currentIndex = users.indexOf(currentDrawer[roomCode]);
         const nextIndex = (currentIndex + 1) % users.length;
         currentDrawer[roomCode] = users[nextIndex];
@@ -60,6 +60,11 @@ app.prepare().then(() => {
         });
         startRound(roomCode);
       }
+    }
+    
+    function clearBoard(roomCode) {
+      rooms[roomCode] = [];
+      io.to(roomCode).emit("clearBoard");
     }
 
     socket.on("add-user", (data) => {
