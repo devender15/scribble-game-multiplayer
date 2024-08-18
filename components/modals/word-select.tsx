@@ -24,7 +24,6 @@ export default function WordSelect() {
   const handleSelectWord = (word: string) => {
     setSelectedWord(word);
     setOpen("");
-    setTimer(15);
   };
 
   const selectRandomWord = () => {
@@ -33,7 +32,7 @@ export default function WordSelect() {
 
     setSelectedWord(word);
 
-    setTimer(15);
+    setOpen("");
   };
 
   useEffect(() => {
@@ -49,20 +48,19 @@ export default function WordSelect() {
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    if (modalType!==type) return;
+    const intervalId = setInterval(() => {
       setTimer((prev) => prev - 1);
     }, 1000);
 
     return () => {
-      clearInterval(interval);
-      setOpen("");
+      clearInterval(intervalId);
     };
-  }, []);
+  }, [modalType]);
 
   useEffect(() => {
     if (timer <= 0 && !selectedWord) {
       selectRandomWord();
-      setOpen("");
     }
   }, [timer]);
 

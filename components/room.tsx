@@ -67,6 +67,10 @@ export default function Room({ roomCode }: { roomCode: string }) {
   useEffect(() => {
     if (!canDraw) return;
     setOpen("word-select");
+
+    return () => {
+      setOpen("");
+    }
   }, [canDraw]);
 
   return (
