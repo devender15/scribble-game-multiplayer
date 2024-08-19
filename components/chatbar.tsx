@@ -1,5 +1,6 @@
 import { useSocket } from "@/providers/socket-provider";
 import { useUserStore } from "@/stores/user-store";
+import { useRoomStore } from "@/stores/room-store";
 import { useEffect, useState, useRef } from "react";
 
 import { type chatMessages } from "@/types";
@@ -14,6 +15,7 @@ type ChatbarProps = {
 export default function Chatbar({ roomCode, username }: ChatbarProps) {
   const { socket } = useSocket();
   const { message, setMessage } = useUserStore();
+  const { drawerSelectedWord } = useRoomStore();
 
   const [chatMessages, setChatMessages] = useState<chatMessages>([]);
   const scrollDivRef = useRef<HTMLDivElement>(null);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-import { UserRound, Pencil, Pen } from "lucide-react";
+import { UserRound, Pencil } from "lucide-react";
 import { motion as m } from "framer-motion";
 
 import { useSocket } from "@/providers/socket-provider";
@@ -77,6 +77,15 @@ export default function PlayersRank({ roomCode }: PlayersRankProps) {
             <p className="font-semibold">{player.name}</p>
             <p className="text-sm">{player.score} points</p>
           </div>
+
+          <div>
+            {canDraw && player.name === name && (
+              <div className="p-2 rounded-full bg-gray-100">
+                <Pencil size={30} color="blue" />
+              </div>
+            )}
+          </div>
+          
           <div>
             <div className="p-2 rounded-full bg-gray-100">
               <UserRound size={30} color="blue" />

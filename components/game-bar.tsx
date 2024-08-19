@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { useRoomStore } from "@/stores/room-store";
+import GuessWord from "./guess-word";
 
 import { Copy, Check } from "lucide-react";
 
@@ -11,7 +12,7 @@ type GameBarProps = {
 export default function GameBar({ roomCode }: GameBarProps) {
   const [copied, setCopied] = useState(false);
 
-  const { selectedWord, canDraw } = useRoomStore();
+  const { selectedWord, canDraw, drawerSelectedWord } = useRoomStore();
 
   const handleCopy = () => {
     navigator.clipboard.writeText(roomCode);
@@ -42,11 +43,12 @@ export default function GameBar({ roomCode }: GameBarProps) {
       <div>
         {canDraw && (
           <p className="text-center text-base text-purple-900">
-           <span className="font-bold tracking-widest">{selectedWord}</span>
-           {" "}
+            <span className="font-bold tracking-widest">{selectedWord}</span>{" "}
             <span>( {selectedWord.length} )</span>
           </p>
         )}
+
+        {!canDraw && <GuessWord word={drawerSelectedWord} />}
       </div>
 
       <div></div>
