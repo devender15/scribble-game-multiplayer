@@ -48,10 +48,15 @@ export default function WordSelect() {
   }, []);
 
   useEffect(() => {
-    if (modalType!==type) return;
-    const intervalId = setInterval(() => {
-      setTimer((prev) => prev - 1);
-    }, 1000);
+    let intervalId: NodeJS.Timeout;
+
+    if (modalType !== type) {
+      setTimer(15);
+    } else {
+      intervalId = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    }
 
     return () => {
       clearInterval(intervalId);

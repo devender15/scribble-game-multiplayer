@@ -21,7 +21,7 @@ export default function Room({ roomCode }: { roomCode: string }) {
   const { name, setRoomUsers } = useUserStore();
   const { socket } = useSocket();
   const { setOpen } = useModalStore();
-  const { canDraw } = useRoomStore();
+  const { canDraw, selectedWord, setDrawerSelectedWord, setSelectedWord } = useRoomStore();
 
   // useEffect(() => {
   //   if (!name) redirect("/");
@@ -44,6 +44,19 @@ export default function Room({ roomCode }: { roomCode: string }) {
       toast(message);
     });
 
+    socket.on(
+      "drawerSelectedWord",
+      ({ drawerSelectedWord }: { drawerSelectedWord: string }) => {
+        setOpen("round-recap");
+
+        setDrawerSelectedWord(drawerSelectedWord);
+
+        return () => {
+          setOpen("");
+        };
+      }
+    );
+
     const handleUserLeave = () => {
       socket.emit("remove-user", { roomCode, username: name });
 
@@ -65,13 +78,24 @@ export default function Room({ roomCode }: { roomCode: string }) {
   }, [socket, name, roomCode]);
 
   useEffect(() => {
-    if (!canDraw) return;
-    setOpen("word-select");
+    if (canDraw) {
+      setOpen("word-select");
+    } else {
+      setOpen("");
+      setSelectedWord("");
+    }
 
     return () => {
       setOpen("");
-    }
+      setSelectedWord("");
+    };
   }, [canDraw]);
+
+  useEffect(() => {
+    if (!selectedWord) return;
+
+    socket.emit("selectedWord", { roomCode, selectedWord });
+  }, [selectedWord]);
 
   return (
     <div className="h-[85%] max-h-[85%] w-full overflow-hidden space-y-4">

@@ -19,9 +19,8 @@ app.prepare().then(() => {
   const io = new Server(server);
 
   const rooms = {};
-
+  const selectedWordObj = {};
   const scores = {};
-
   const currentDrawer = {};
   const countdowns = {};
 
@@ -67,6 +66,17 @@ app.prepare().then(() => {
       io.to(roomCode).emit("clearBoard");
     }
 
+    function showRoundRecap(roomCode) {
+
+    }
+
+    socket.on("selectedWord", (data) => {
+      const { roomCode, selectedWord } = data;
+      selectedWordObj[roomCode] = selectedWord;
+
+      io.to(roomCode).emit("drawerSelectedWord", { drawerSelectedWord: selectedWord });
+    })
+
     socket.on("add-user", (data) => {
       const { roomCode, username } = data;
 
@@ -87,6 +97,10 @@ app.prepare().then(() => {
         startRound(roomCode);
       }
 
+      if(selectedWordObj[roomCode]) {
+        io.to(roomCode).emit("drawerSelectedWord", { drawerSelectedWord: selectedWordObj[roomCode] });
+      }
+
       io.to(roomCode).emit("newUserJoined", {
         newName: username,
       });
@@ -98,9 +112,6 @@ app.prepare().then(() => {
 
     socket.on("get-scores", (data) => {
       const { roomCode } = data;
-
-      console.log(roomCode, scores);
-
       io.to(roomCode).emit("receive-scores", scores);
     });
 

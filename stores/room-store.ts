@@ -7,6 +7,8 @@ type RoomStore = {
     setTimeLeft: (timeLeft: number) => void;
     selectedWord: string;
     setSelectedWord: (selectedWord: string) => void;
+    drawerSelectedWord: string;
+    setDrawerSelectedWord: (drawerSelectedWord: string) => void;
 }
 
 export const useRoomStore = create<RoomStore>((set) => ({
@@ -16,4 +18,6 @@ export const useRoomStore = create<RoomStore>((set) => ({
     setTimeLeft: (timeLeft) => set({ timeLeft }),
     selectedWord: "",
     setSelectedWord: (selectedWord) => set({ selectedWord }),
+    drawerSelectedWord: "",
+    setDrawerSelectedWord: (drawerSelectedWord) => set({ drawerSelectedWord }),
 }));
