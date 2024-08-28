@@ -25,7 +25,18 @@ export default function Chatbar({ roomCode, username }: ChatbarProps) {
 
     if (!message) return;
 
-    socket.emit("send-msg", { roomCode, username, message });
+    const messageType = message === drawerSelectedWord ? "guess" : "text";
+    const newMessage =
+      message === drawerSelectedWord
+        ? `${username} guessed the correct word!`
+        : message;
+
+    socket.emit("send-msg", {
+      roomCode,
+      username,
+      message: newMessage,
+      type: messageType,
+    });
 
     setMessage("");
   };
@@ -33,20 +44,27 @@ export default function Chatbar({ roomCode, username }: ChatbarProps) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMessage(e.target.value);
   };
-  
 
   useEffect(() => {
     if (!socket) return;
 
     socket.on(
       "receive-msg",
-      ({ username, message }: { username: string; message: string }) => {
+      ({
+        username,
+        message,
+        type,
+      }: {
+        username: string;
+        message: string;
+        type: string;
+      }) => {
         // @ts-ignore
         setChatMessages((prev: chatMessages) => {
           const newObj = {
             username,
             message,
-            type: "text",
+            type,
           };
 
           return [...prev, newObj];
@@ -66,16 +84,26 @@ export default function Chatbar({ roomCode, username }: ChatbarProps) {
     });
 
     return () => {};
-  }, [chatMessages])
+  }, [chatMessages]);
 
   return (
     <div className="chatbar w-full h-full border flex flex-col gap-y-4 pb-1 overflow-hidden">
-      <ScrollArea ref={scrollDivRef} className="h-[calc(100%-1rem)] max-h-[calc(100%-1rem)] w-full">
+      <ScrollArea
+        ref={scrollDivRef}
+        className="h-[calc(100%-1rem)] max-h-[calc(100%-1rem)] w-full"
+      >
         <div className="flex flex-col gap-y-2 text-sm">
           {chatMessages?.map((msg, index) => (
             <p key={index} className="bg-gray-100 p-1">
-              <span className="font-bold text-blue-800">{msg.username}</span> :{" "}
-              <span>{msg.message}</span>
+              <span className={`font-bold text-blue-800`}>{msg.username}</span>{" "}
+              :{" "}
+              <span
+                className={`${
+                  msg.type === "guess" ? "text-green-600" : "text-black"
+                }`}
+              >
+                {msg.message}
+              </span>
             </p>
           ))}
         </div>

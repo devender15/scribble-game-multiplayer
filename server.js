@@ -21,6 +21,7 @@ app.prepare().then(() => {
   const rooms = {};
   const selectedWordObj = {};
   const scores = {};
+  const correctGuesses = {};
   const currentDrawer = {};
   const countdowns = {};
 
@@ -138,9 +139,9 @@ app.prepare().then(() => {
     });
 
     socket.on("send-msg", (data) => {
-      const { roomCode, username, message } = data;
+      const { roomCode, username, message, type } = data;
 
-      io.to(roomCode).emit("receive-msg", { username, message });
+      io.to(roomCode).emit("receive-msg", { username, message, type });
     });
 
     socket.on("remove-user", (data) => {
