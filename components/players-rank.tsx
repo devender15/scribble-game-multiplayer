@@ -23,7 +23,7 @@ type Scores = Record<string, number>;
 
 export default function PlayersRank({ roomCode }: PlayersRankProps) {
   const { roomUsers, setRoomUsers, name } = useUserStore();
-  const { canDraw } = useRoomStore();
+  const { canDraw, selectedWord } = useRoomStore();
 
   const [players, setPlayers] = useState<PlayerRanking>([]);
   const [scores, setScores] = useState<Scores>({});
@@ -45,14 +45,11 @@ export default function PlayersRank({ roomCode }: PlayersRankProps) {
       };
     });
 
-    setPlayers(updatedPlayers);
-  }, [roomUsers, scores]);
-
-  useEffect(() => {
-    const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
+    const sortedPlayers = updatedPlayers.sort((a, b) => b.score - a.score);
 
     setPlayers(sortedPlayers);
-  }, [scores]);
+  }, [roomUsers, scores]);
+
 
   useEffect(() => {
     if (!socket) return;
@@ -62,7 +59,7 @@ export default function PlayersRank({ roomCode }: PlayersRankProps) {
     socket.on("receive-scores", (data: Scores) => {
       setScores(data);
     });
-  }, [socket]);
+  }, [socket, selectedWord]);
 
   return (
     <div className="w-full h-[80%] max-h-[80%] space-y-2 p-2 overflow-y-auto">

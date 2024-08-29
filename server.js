@@ -25,58 +25,72 @@ app.prepare().then(() => {
   const currentDrawer = {};
   const countdowns = {};
 
-
   io.on("connection", (socket) => {
     console.log("a user connected");
 
     function startRound(roomCode) {
       let timeLeft = 60;
       io.to(roomCode).emit("countdown", { timeLeft });
-  
+
       countdowns[roomCode] = setInterval(() => {
         timeLeft -= 1;
         io.to(roomCode).emit("countdown", { timeLeft });
-  
+
         if (timeLeft <= 0) {
           clearInterval(countdowns[roomCode]);
-          clearBoard(roomCode);
-          switchDrawer(roomCode);
+          showRoundRecap(roomCode);
         }
       }, 1000);
     }
-  
+
     function switchDrawer(roomCode) {
       if (rooms[roomCode]) {
         const usersSet = io.sockets.adapter.rooms.get(roomCode);
-        if(!usersSet) return;
-        
+        if (!usersSet) return;
+
         const users = Array.from(usersSet);
         const currentIndex = users.indexOf(currentDrawer[roomCode]);
         const nextIndex = (currentIndex + 1) % users.length;
         currentDrawer[roomCode] = users[nextIndex];
-  
+
         io.to(roomCode).emit("currentDrawer", {
           username: currentDrawer[roomCode],
         });
-        startRound(roomCode);
       }
     }
-    
+
     function clearBoard(roomCode) {
       rooms[roomCode] = [];
       io.to(roomCode).emit("clearBoard");
     }
 
     function showRoundRecap(roomCode) {
+      io.to(roomCode).emit("roundRecap", {
+        correctGuesses: correctGuesses[roomCode],
+      });
 
+      for (let username in correctGuesses[roomCode]) {
+        scores[username] += correctGuesses[roomCode][username];
+      }
+
+      for (let username in correctGuesses[roomCode]) {
+        correctGuesses[roomCode][username] = 0;
+      }
+
+      setTimeout(() => {
+        clearBoard(roomCode);
+        switchDrawer(roomCode);
+      }, 10000);
     }
 
     socket.on("selectedWord", (data) => {
       const { roomCode, selectedWord } = data;
       selectedWordObj[roomCode] = selectedWord;
 
-      io.to(roomCode).emit("drawerSelectedWord", { drawerSelectedWord: selectedWord });
-    })
+      io.to(roomCode).emit("drawerSelectedWord", {
+        drawerSelectedWord: selectedWord,
+      });
+    });
 
     socket.on("add-user", (data) => {
       const { roomCode, username } = data;
@@ -95,11 +109,20 @@ app.prepare().then(() => {
 
       if (!currentDrawer[roomCode]) {
         currentDrawer[roomCode] = socket.id;
-        startRound(roomCode);
       }
 
-      if(selectedWordObj[roomCode]) {
-        io.to(roomCode).emit("drawerSelectedWord", { drawerSelectedWord: selectedWordObj[roomCode] });
+      if (!correctGuesses[roomCode]) {
+        correctGuesses[roomCode] = {
+          [username]: 0,
+        };
+      } else {
+        correctGuesses[roomCode][username] = 0;
+      }
+
+      if (selectedWordObj[roomCode]) {
+        io.to(roomCode).emit("drawerSelectedWord", {
+          drawerSelectedWord: selectedWordObj[roomCode],
+        });
       }
 
       io.to(roomCode).emit("newUserJoined", {
@@ -110,6 +133,11 @@ app.prepare().then(() => {
         username: currentDrawer[roomCode],
       });
     });
+
+    socket.on("startRound", (data) => {
+      const { roomCode } = data;
+      startRound(roomCode);
+    })
 
     socket.on("get-scores", (data) => {
       const { roomCode } = data;
@@ -140,6 +168,10 @@ app.prepare().then(() => {
 
     socket.on("send-msg", (data) => {
       const { roomCode, username, message, type } = data;
+
+      if (type === "guess") {
+        correctGuesses[roomCode][username] = 10;
+      }
 
       io.to(roomCode).emit("receive-msg", { username, message, type });
     });

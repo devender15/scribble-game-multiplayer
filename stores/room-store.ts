@@ -9,6 +9,8 @@ type RoomStore = {
     setSelectedWord: (selectedWord: string) => void;
     drawerSelectedWord: string;
     setDrawerSelectedWord: (drawerSelectedWord: string) => void;
+    scores: Record<string, number>;
+    setScores: (scores: Record<string, number>) => void;
 }
 
 export const useRoomStore = create<RoomStore>((set) => ({
@@ -20,4 +22,6 @@ export const useRoomStore = create<RoomStore>((set) => ({
     setSelectedWord: (selectedWord) => set({ selectedWord }),
     drawerSelectedWord: "",
     setDrawerSelectedWord: (drawerSelectedWord) => set({ drawerSelectedWord }),
+    scores: {},
+    setScores: (scores) => set({ scores }),
 }));

@@ -21,7 +21,8 @@ export default function Room({ roomCode }: { roomCode: string }) {
   const { name, setRoomUsers } = useUserStore();
   const { socket } = useSocket();
   const { setOpen } = useModalStore();
-  const { canDraw, selectedWord, setDrawerSelectedWord, setSelectedWord } = useRoomStore();
+  const { canDraw, selectedWord, setDrawerSelectedWord, setSelectedWord, setScores } =
+    useRoomStore();
 
   // useEffect(() => {
   //   if (!name) redirect("/");
@@ -47,15 +48,14 @@ export default function Room({ roomCode }: { roomCode: string }) {
     socket.on(
       "drawerSelectedWord",
       ({ drawerSelectedWord }: { drawerSelectedWord: string }) => {
-        setOpen("round-recap");
-
         setDrawerSelectedWord(drawerSelectedWord);
-
-        return () => {
-          setOpen("");
-        };
       }
     );
+
+    socket.on("roundRecap", ({ correctGuesses }: { correctGuesses: Record<string, number> }) => {
+      setOpen("round-recap");
+      setScores(correctGuesses);
+    });
 
     const handleUserLeave = () => {
       socket.emit("remove-user", { roomCode, username: name });
@@ -95,6 +95,7 @@ export default function Room({ roomCode }: { roomCode: string }) {
     if (!selectedWord) return;
 
     socket.emit("selectedWord", { roomCode, selectedWord });
+    socket.emit("startRound", { roomCode });
   }, [selectedWord]);
 
   return (
