@@ -1,7 +1,6 @@
 import { createServer } from "http";
 import next from "next";
 import { Server } from "socket.io";
-// import { handleSocketEvents } from "./lib/socket-events";
 
 const dev = process.env.NODE_ENV !== "production";
 
@@ -20,10 +19,14 @@ app.prepare().then(() => {
 
   const rooms = {};
   const selectedWordObj = {};
-  const scores = {};
-  const correctGuesses = {};
-  const currentDrawer = {};
-  const countdowns = {};
+  let scores = {};
+  let correctGuesses = {};
+  let currentDrawer = {};
+  let currentDrawerName = "";
+  let countdowns = {};
+  const playersPlayed = [];
+  const totalLevels = 2;
+  let currentLevel = 1;
 
   io.on("connection", (socket) => {
     console.log("a user connected");
@@ -50,8 +53,15 @@ app.prepare().then(() => {
 
         const users = Array.from(usersSet);
         const currentIndex = users.indexOf(currentDrawer[roomCode]);
-        const nextIndex = (currentIndex + 1) % users.length;
+
+        let nextIndex = (currentIndex + 1) % users.length;
+        while (playersPlayed.includes(users[nextIndex])) {
+          nextIndex = (nextIndex + 1) % users.length;
+        }
+
         currentDrawer[roomCode] = users[nextIndex];
+
+        playersPlayed.push(currentDrawer[roomCode]);
 
         io.to(roomCode).emit("currentDrawer", {
           username: currentDrawer[roomCode],
@@ -62,6 +72,33 @@ app.prepare().then(() => {
     function clearBoard(roomCode) {
       rooms[roomCode] = [];
       io.to(roomCode).emit("clearBoard");
+    }
+
+    function startNextLevel(roomCode) {
+      if (currentLevel < totalLevels) {
+        currentLevel += 1;
+        io.to(roomCode).emit("nextLevel", { currentLevel });
+        clearBoard(roomCode);
+
+        // clear playersPlayed
+        playersPlayed.length = 0;
+
+        setTimeout(() => {
+          switchDrawer(roomCode);
+        }, 5000);
+      } else {
+        io.to(roomCode).emit("gameOver", scores);
+
+        // clear all game data
+        delete rooms[roomCode];
+        delete selectedWordObj[roomCode];
+        // scores = {};
+        correctGuesses[roomCode] = {};
+        currentDrawer[roomCode] = null;
+        countdowns[roomCode] = null;
+        playersPlayed.length = 0;
+        currentLevel = 1;
+      }
     }
 
     function showRoundRecap(roomCode) {
@@ -78,10 +115,25 @@ app.prepare().then(() => {
       }
 
       setTimeout(() => {
-        clearBoard(roomCode);
-        switchDrawer(roomCode);
+        // check if all players have played
+        if (
+          playersPlayed.length === io.sockets.adapter.rooms.get(roomCode).size
+        ) {
+          startNextLevel(roomCode);
+        } else {
+          switchDrawer(roomCode);
+          clearBoard(roomCode);
+        }
       }, 10000);
     }
+
+    socket.on("currentDrawerName", (data) => {
+      const { roomCode, drawerName } = data;
+
+      currentDrawerName = drawerName;
+
+      io.to(roomCode).emit("whoIsDrawing", drawerName);
+    });
 
     socket.on("selectedWord", (data) => {
       const { roomCode, selectedWord } = data;
@@ -125,6 +177,16 @@ app.prepare().then(() => {
         });
       }
 
+      if (playersPlayed.length === 0) {
+        playersPlayed.push(currentDrawer[roomCode]);
+      }
+
+      if(!currentDrawerName) {
+        currentDrawerName = username;
+      }
+
+      io.to(roomCode).emit("whoIsDrawing", currentDrawerName);
+
       io.to(roomCode).emit("newUserJoined", {
         newName: username,
       });
@@ -137,7 +199,7 @@ app.prepare().then(() => {
     socket.on("startRound", (data) => {
       const { roomCode } = data;
       startRound(roomCode);
-    })
+    });
 
     socket.on("get-scores", (data) => {
       const { roomCode } = data;
@@ -192,6 +254,51 @@ app.prepare().then(() => {
 
     socket.on("disconnect", () => {
       console.log("user disconnected");
+
+      const roomsJoined = Object.keys(socket.rooms);
+
+      roomsJoined.forEach((roomCode) => {
+        if (currentDrawer[roomCode] === socket.id) {
+          switchDrawer(roomCode);
+        }
+
+        // if (countdowns[roomCode]) {
+        //   clearInterval(countdowns[roomCode]);
+        // }
+
+        // if (rooms[roomCode]) {
+        //   rooms[roomCode] = [];
+        // }
+
+        // if (selectedWordObj[roomCode]) {
+        //   delete selectedWordObj[roomCode];
+        // }
+
+        if (scores[socket.id]) {
+          delete scores[socket.id];
+        }
+
+        if (correctGuesses[roomCode]) {
+          delete correctGuesses[roomCode];
+        }
+
+        if (currentDrawer[roomCode]) {
+          delete currentDrawer[roomCode];
+        }
+
+        if (countdowns[roomCode]) {
+          delete countdowns[roomCode];
+        }
+
+        if (playersPlayed.includes(socket.id)) {
+          const index = playersPlayed.indexOf(socket.id);
+          playersPlayed.splice(index, 1);
+        }
+
+        if (currentLevel !== 1) {
+          currentLevel = 1;
+        }
+      });
     });
 
     socket.on("error", (error) => {

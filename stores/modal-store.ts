@@ -1,8 +1,8 @@
 import { create } from "zustand";
 
 type ModalState = {
-    modalType: "word-select" | "game-over" | "round-recap" | "";
-    setOpen: (modalType: "word-select" | "game-over" | "round-recap" | "") => void;
+    modalType: "word-select" | "game-over" | "round-recap" | "new-level" | "";
+    setOpen: (modalType: "word-select" | "game-over" | "round-recap" | "new-level" | "") => void;
 }
 
 export const useModalStore = create<ModalState>((set) => ({

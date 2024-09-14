@@ -23,10 +23,11 @@ type Scores = Record<string, number>;
 
 export default function PlayersRank({ roomCode }: PlayersRankProps) {
   const { roomUsers, setRoomUsers, name } = useUserStore();
-  const { canDraw, selectedWord } = useRoomStore();
+  const { selectedWord } = useRoomStore();
 
   const [players, setPlayers] = useState<PlayerRanking>([]);
   const [scores, setScores] = useState<Scores>({});
+  const [drawerName, setDrawerName] = useState<string>("");
 
   const { socket } = useSocket();
 
@@ -40,7 +41,7 @@ export default function PlayersRank({ roomCode }: PlayersRankProps) {
 
       return {
         id: user.id,
-        name: user.name + (user.name === name ? " ( you )" : ""),
+        name: user.name,
         score,
       };
     });
@@ -50,7 +51,6 @@ export default function PlayersRank({ roomCode }: PlayersRankProps) {
     setPlayers(sortedPlayers);
   }, [roomUsers, scores]);
 
-
   useEffect(() => {
     if (!socket) return;
 
@@ -58,6 +58,10 @@ export default function PlayersRank({ roomCode }: PlayersRankProps) {
 
     socket.on("receive-scores", (data: Scores) => {
       setScores(data);
+    });
+
+    socket.on("whoIsDrawing", (drawerName: string) => {
+      setDrawerName(drawerName);
     });
   }, [socket, selectedWord]);
 
@@ -71,18 +75,20 @@ export default function PlayersRank({ roomCode }: PlayersRankProps) {
         >
           <span className="font-semibold">#{index + 1}</span>
           <div>
-            <p className="font-semibold">{player.name}</p>
+            <p className="font-semibold">
+              {player.name + `${player.name === name ? " ( you )" : ""}`}
+            </p>
             <p className="text-sm">{player.score} points</p>
           </div>
 
           <div>
-            {canDraw && player.name === name && (
-              <div className="p-2 rounded-full bg-gray-100">
-                <Pencil size={30} color="blue" />
+            {player.name === drawerName && (
+              <div className="p-2 rounded-full bg-gray-100 animate-bounce">
+                <Pencil size={15} color="blue" />
               </div>
             )}
           </div>
-          
+
           <div>
             <div className="p-2 rounded-full bg-gray-100">
               <UserRound size={30} color="blue" />

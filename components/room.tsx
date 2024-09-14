@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 
 import { useUserStore } from "@/stores/user-store";
 import { useSocket } from "@/providers/socket-provider";
@@ -21,8 +21,15 @@ export default function Room({ roomCode }: { roomCode: string }) {
   const { name, setRoomUsers } = useUserStore();
   const { socket } = useSocket();
   const { setOpen } = useModalStore();
-  const { canDraw, selectedWord, setDrawerSelectedWord, setSelectedWord, setScores } =
-    useRoomStore();
+  const {
+    canDraw,
+    selectedWord,
+    setDrawerSelectedWord,
+    setSelectedWord,
+    setScores,
+    setCurrentLevel,
+    setFinalScores,
+  } = useRoomStore();
 
   // useEffect(() => {
   //   if (!name) redirect("/");
@@ -43,6 +50,7 @@ export default function Room({ roomCode }: { roomCode: string }) {
 
     socket.on("userLeft", ({ message }: { message: string }) => {
       toast(message);
+      handleFetchRoomUsers(roomCode, setRoomUsers);
     });
 
     socket.on(
@@ -52,9 +60,22 @@ export default function Room({ roomCode }: { roomCode: string }) {
       }
     );
 
-    socket.on("roundRecap", ({ correctGuesses }: { correctGuesses: Record<string, number> }) => {
-      setOpen("round-recap");
-      setScores(correctGuesses);
+    socket.on(
+      "roundRecap",
+      ({ correctGuesses }: { correctGuesses: Record<string, number> }) => {
+        setOpen("round-recap");
+        setScores(correctGuesses);
+      }
+    );
+
+    socket.on("nextLevel", ({ currentLevel }: { currentLevel: number }) => {
+      setCurrentLevel(currentLevel);
+      setOpen("new-level");
+    });
+
+    socket.on("gameOver", (scores: Record<string, number>) => {
+      setFinalScores(scores);
+      setOpen("game-over");
     });
 
     const handleUserLeave = () => {

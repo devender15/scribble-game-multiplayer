@@ -11,12 +11,12 @@ type DrawingCanvasProps = {
 export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
   const { socket } = useSocket();
   const { canDraw, timeLeft, setCanDraw, setTimeLeft } = useRoomStore();
+  const { name } = useUserStore();
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
-  // const [canDraw, setCanDraw] = useState(false);
-  // const [timeLeft, setTimeLeft] = useState(60);
+  
 
   const drawingQueue = useRef<
     { x0: number; y0: number; x1: number; y1: number }[]
@@ -48,6 +48,10 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
 
     socket.on("currentDrawer", ({ username: drawer }: { username: string }) => {
       setCanDraw(drawer === socket.id);
+
+      if(drawer === socket.id) {
+        socket.emit("currentDrawerName", { roomCode, drawerName: name });
+      }
     });
 
     socket.on("countdown", ({ timeLeft }: { timeLeft: number }) => {
