@@ -97,12 +97,12 @@ export default function CustomizePlayer() {
           value={name}
           onChange={handleInputChange}
           autoFocus={true}
-          className="border-none outline-none transition duration-500 p-2 h-fit text-violet-900 bg-pink-400/30 rounded-lg lowercase placeholder-violet-500 text-sm w-48"
+          className="border-none focus-within:outline-2 focus-within:ring-2 focus-within:ring-purple-900 outline-none transition duration-500 p-2 h-fit text-violet-900 bg-pink-50/50 rounded-lg lowercase placeholder-violet-500 text-sm w-48"
         />
         <span className="">{STATUS_RENDER[validationStatus]}</span>
       </div>
 
-      <span className="text-red-500 text-xs lowercase h-2">
+      <span className="text-red-800 text-xs lowercase h-2">
         {errorMessage && errorMessage}
       </span>
     </div>

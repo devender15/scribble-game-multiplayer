@@ -45,25 +45,21 @@ export default function GameMode() {
     <div className="w-full h-full space-y-10">
       <CustomizePlayer />
 
-      <div className="w-full flex items-center">
-        X <Separator className="w-full bg-pink-600" /> X
-      </div>
-
-      <div className="flex gap-x-8 items-center w-full h-52 text-pink-800">
+      <div className="flex gap-x-8 items-center w-full h-52 text-pink-800 px-16">
         {mode === "join" ? (
           <JoinRoom setMode={setMode} />
         ) : (
           <>
             {" "}
             <button
-              className="basis-1/2 flex  rounded-xl shadow-sm justify-center items-center h-full bg-pink-300/30 hover:bg-pink-500/20 transition-all duration-200 disabled:bg-gray-600/10 disabled:text-gray-400"
+              className="basis-1/2 flex  rounded-xl shadow-sm justify-center items-center h-full bg-pink-400/30 hover:bg-pink-100/20 transition-all duration-200 disabled:bg-gray-600/10 disabled:text-gray-400"
               onClick={() => handleToggleMode("join")}
               disabled={validationStatus !== "success" || !name}
             >
               join a private room
             </button>
             <button
-              className="basis-1/2 flex  rounded-xl shadow-sm justify-center items-center h-full bg-pink-300/30 hover:bg-pink-500/20 transition-all duration-200 disabled:bg-gray-600/10 disabled:text-gray-400"
+              className="basis-1/2 flex  rounded-xl shadow-sm justify-center items-center h-full bg-pink-400/30 hover:bg-pink-100/20 transition-all duration-200 disabled:bg-gray-600/10 disabled:text-gray-400"
               onClick={handleCreateRoom}
               disabled={validationStatus !== "success" || !name}
             >
