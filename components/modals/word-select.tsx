@@ -10,7 +10,7 @@ import { useModalStore } from "@/stores/modal-store";
 import { useRoomStore } from "@/stores/room-store";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { WORDS_FOR_DRAWING } from "@/constants/data";
 
 export default function WordSelect() {
   const type = "word-select";
@@ -27,8 +27,8 @@ export default function WordSelect() {
   };
 
   const selectRandomWord = () => {
-    const randomIndex = Math.floor(Math.random() * words.length);
-    const word = words[randomIndex];
+    const randomIndex = Math.floor(Math.random() * WORDS_FOR_DRAWING.length);
+    const word = WORDS_FOR_DRAWING[randomIndex];
 
     setSelectedWord(word);
 
@@ -36,15 +36,10 @@ export default function WordSelect() {
   };
 
   useEffect(() => {
-    const handleFetchWords = async () => {
-      const res = await axios.get(
-        "https://random-word-api.herokuapp.com/word?number=3"
-      );
-      const data = res.data;
-      setWords(data);
-    };
 
-    handleFetchWords();
+    const randomWords = WORDS_FOR_DRAWING.sort(() => 0.5 - Math.random()).slice(0, 3);
+
+    setWords(randomWords);
   }, []);
 
   useEffect(() => {
