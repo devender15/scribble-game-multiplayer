@@ -10,14 +10,13 @@ type DrawingCanvasProps = {
 
 export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
   const { socket } = useSocket();
-  const { canDraw, timeLeft, setCanDraw, setTimeLeft } = useRoomStore();
+  const { canDraw, setCanDraw, setTimeLeft } = useRoomStore();
   const { name } = useUserStore();
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
   
-
   const drawingQueue = useRef<
     { x0: number; y0: number; x1: number; y1: number }[]
   >([]);
@@ -170,9 +169,6 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
         onMouseMove={draw}
         className="w-full h-full block"
       />
-      <div className="absolute top-0 right-0 bg-white bg-opacity-60 p-2 rounded-lg border">
-        <span>{timeLeft}</span>
-      </div>
     </div>
   );
 }
