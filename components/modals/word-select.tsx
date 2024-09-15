@@ -36,11 +36,14 @@ export default function WordSelect() {
   };
 
   useEffect(() => {
-
-    const randomWords = WORDS_FOR_DRAWING.sort(() => 0.5 - Math.random()).slice(0, 3);
+    if (modalType !== type) return;
+    const randomWords = WORDS_FOR_DRAWING.sort(() => 0.5 - Math.random()).slice(
+      0,
+      3
+    );
 
     setWords(randomWords);
-  }, []);
+  }, [modalType]);
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
