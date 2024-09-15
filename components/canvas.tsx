@@ -4,19 +4,26 @@ import { useSocket } from "@/providers/socket-provider";
 import { useUserStore } from "@/stores/user-store";
 import { useRoomStore } from "@/stores/room-store";
 
+import { Button } from "./ui/button";
+import { Slider } from "./ui/slider";
+import CountdownClock from "./clock";
+
+import { Eraser, Trash2, Circle } from "lucide-react";
+
 type DrawingCanvasProps = {
   roomCode: string;
 };
 
 export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
   const { socket } = useSocket();
-  const { canDraw, setCanDraw, setTimeLeft } = useRoomStore();
+  const { canDraw, setCanDraw, setTimeLeft, timeLeft } = useRoomStore();
   const { name } = useUserStore();
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
-  
+  const [brushSize, setBrushSize] = useState(5);
+
   const drawingQueue = useRef<
     { x0: number; y0: number; x1: number; y1: number }[]
   >([]);
@@ -48,7 +55,7 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
     socket.on("currentDrawer", ({ username: drawer }: { username: string }) => {
       setCanDraw(drawer === socket.id);
 
-      if(drawer === socket.id) {
+      if (drawer === socket.id) {
         socket.emit("currentDrawerName", { roomCode, drawerName: name });
       }
     });
@@ -64,7 +71,7 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
         console.warn("Context not ready, queuing clear board");
         drawingQueue.current.push({ x0: 0, y0: 0, x1: 0, y1: 0 });
       }
-    })
+    });
 
     socket.on(
       "drawing",
@@ -93,7 +100,6 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
       socket.off("countdown");
       socket.off("currentDrawer");
       socket.off("clearBoard");
-
     };
   }, [socket, context]);
 
@@ -160,15 +166,82 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
     }
   };
   return (
-    <div className="relative w-full h-full border bg-white rounded-lg">
-      <canvas
-        ref={canvasRef}
-        onMouseDown={startDrawing}
-        onMouseUp={endDrawing}
-        onMouseOut={endDrawing}
-        onMouseMove={draw}
-        className="w-full h-full block"
-      />
+    <div className="w-full h-full rounded-lg space-y-8 relative">
+      <div className="relative w-full bg-white h-[65%] rounded-lg">
+        <canvas
+          ref={canvasRef}
+          onMouseDown={startDrawing}
+          onMouseUp={endDrawing}
+          onMouseOut={endDrawing}
+          onMouseMove={draw}
+          className="w-full h-full block"
+        />
+
+        <div className="absolute top-2 right-4">
+          <CountdownClock totalSeconds={timeLeft} />
+        </div>
+      </div>
+
+      <div className="w-full bg-white shadow-lg p-4 rounded-lg absolute bottom-0">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold mb-4">Tools</h2>
+
+          <div className="flex items-center space-x-4">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="flex items-center space-x-2"
+            >
+              <Eraser size={16} />
+            </Button>
+            <Button
+              size="icon"
+              variant={"ghost"}
+              className="flex items-center space-x-2"
+            >
+              <Trash2 size={16} />
+            </Button>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Brush Size
+            </label>
+            <Slider
+              value={[brushSize]}
+              onValueChange={(value) => setBrushSize(value[0])}
+              max={20}
+              step={1}
+            />
+          </div>
+          <div className="grid grid-cols-4 gap-2">
+            {[
+              "#000000",
+              "#FF0000",
+              "#00FF00",
+              "#0000FF",
+              "#FFFF00",
+              "#FF00FF",
+              "#00FFFF",
+              "#FFFFFF",
+            ].map((color) => (
+              <button
+                key={color}
+                title={color}
+                className="w-8 h-8 rounded-full"
+              >
+                <Circle
+                  className="w-full h-full rounded-full"
+                  style={{ backgroundColor: color }}
+                  color={color}
+                />
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

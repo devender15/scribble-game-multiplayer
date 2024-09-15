@@ -123,13 +123,13 @@ export default function Room({ roomCode }: { roomCode: string }) {
     <div className="h-[100%] max-h-[100%] w-full overflow-hidden bg-gradient-to-br from-pink-100 to-purple-100">
       <GameBar roomCode={roomCode} />
       <section className="grid grid-cols-4 gap-3 px-4 h-[calc(100vh-4rem)] p-4">
-        <div>
+        <div className="shadow-md h-full">
           <PlayersRank roomCode={roomCode} />
         </div>
-        <div className="border w-full mx-auto shadow-md h-[70%] col-span-2">
+        <div className="w-full mx-auto h-full col-span-2">
           <DrawingCanvas roomCode={roomCode} />
         </div>
-        <div className="h-full w-full rounded-lg">
+        <div className="h-full w-full rounded-lg shadow-md">
           <Chatbar roomCode={roomCode} username={name} />
         </div>
       </section>

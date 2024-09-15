@@ -66,7 +66,7 @@ export default function PlayersRank({ roomCode }: PlayersRankProps) {
   }, [socket, selectedWord]);
 
   return (
-    <div className="w-full h-[80%] max-h-[80%] space-y-2 p-2 overflow-y-auto bg-white rounded-lg">
+    <div className="w-full h-full max-h-full space-y-2 p-2 overflow-y-auto bg-white rounded-lg">
       {players.map((player, index) => (
         <m.div
           layout
