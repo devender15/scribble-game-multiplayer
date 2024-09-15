@@ -28,7 +28,6 @@ export default async function Page({
 
   return (
     <div className="max-h-screen h-screen overflow-hidden max-w-[100vw]">
-      <Header />
       <Room roomCode={roomCode as string} />
     </div>
   );

@@ -87,10 +87,10 @@ export default function Chatbar({ roomCode, username }: ChatbarProps) {
   }, [chatMessages]);
 
   return (
-    <div className="chatbar w-full h-full border flex flex-col gap-y-4 pb-1 overflow-hidden">
+    <div className="chatbar w-full h-full max-h-full border flex flex-col gap-y-4 overflow-hidden bg-white rounded-lg">
       <ScrollArea
         ref={scrollDivRef}
-        className="h-[calc(100%-1rem)] max-h-[calc(100%-1rem)] w-full"
+        className="h-[calc(100vh-8rem)] max-h-[calc(100vh-10rem)] w-full"
       >
         <div className="flex flex-col gap-y-2 text-sm">
           {chatMessages?.map((msg, index) => (
@@ -114,7 +114,7 @@ export default function Chatbar({ roomCode, username }: ChatbarProps) {
           value={message}
           onChange={handleInputChange}
           autoFocus={true}
-          className="text-sm w-full h-7 border p-2 lowercase"
+          className="text-sm w-full h-7 border p-2 lowercase rounded-md"
           placeholder="type..."
         />
       </form>

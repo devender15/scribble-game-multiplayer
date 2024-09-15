@@ -28,7 +28,7 @@ export default function GameBar({ roomCode }: GameBarProps) {
   };
 
   return (
-    <div className="bg-pink-300/50 w-full h-16 py-2 px-4 flex justify-between items-center">
+    <div className="bg-white w-full h-16 py-2 px-4 flex justify-between items-center">
       <p className="my-1 flex items-center gap-x-4 p-2 bg-pink-100 rounded-full w-fit text-xs">
         Code:{" "}
         <span className="flex items-center gap-x-2 text-purple-900">

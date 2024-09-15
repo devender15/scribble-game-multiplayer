@@ -160,7 +160,7 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
     }
   };
   return (
-    <div className="relative w-full h-full border">
+    <div className="relative w-full h-full border bg-white rounded-lg">
       <canvas
         ref={canvasRef}
         onMouseDown={startDrawing}

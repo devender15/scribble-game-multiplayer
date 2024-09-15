@@ -120,16 +120,16 @@ export default function Room({ roomCode }: { roomCode: string }) {
   }, [selectedWord]);
 
   return (
-    <div className="h-[85%] max-h-[85%] w-full overflow-hidden space-y-4">
+    <div className="h-[100%] max-h-[100%] w-full overflow-hidden bg-gradient-to-br from-pink-100 to-purple-100">
       <GameBar roomCode={roomCode} />
-      <section className="grid grid-cols-4 gap-3 px-4 h-[calc(100vh-12rem)]">
+      <section className="grid grid-cols-4 gap-3 px-4 h-[calc(100vh-4rem)] p-4">
         <div>
           <PlayersRank roomCode={roomCode} />
         </div>
         <div className="border w-full mx-auto shadow-md h-[70%] col-span-2">
           <DrawingCanvas roomCode={roomCode} />
         </div>
-        <div className="h-full w-full">
+        <div className="h-full w-full rounded-lg">
           <Chatbar roomCode={roomCode} username={name} />
         </div>
       </section>
