@@ -135,6 +135,12 @@ app.prepare().then(() => {
       io.to(roomCode).emit("whoIsDrawing", drawerName);
     });
 
+    socket.on("eraseBoard", (data) => {
+      const { roomCode } = data;
+
+      clearBoard(roomCode);
+    })
+
     socket.on("selectedWord", (data) => {
       const { roomCode, selectedWord } = data;
       selectedWordObj[roomCode] = selectedWord;
@@ -207,7 +213,7 @@ app.prepare().then(() => {
     });
 
     socket.on("drawing", (data) => {
-      const { roomCode, x0, y0, x1, y1 } = data;
+      const { roomCode, x0, y0, x1, y1, brushcolor, brushSize } = data;
 
       if (!rooms[roomCode]) {
         rooms[roomCode] = [];
@@ -218,6 +224,8 @@ app.prepare().then(() => {
         y0,
         x1,
         y1,
+        brushcolor,
+        brushSize,
       });
 
       socket.to(roomCode).emit("drawing", {
@@ -225,6 +233,8 @@ app.prepare().then(() => {
         y0,
         x1,
         y1,
+        brushcolor,
+        brushSize,
       });
     });
 

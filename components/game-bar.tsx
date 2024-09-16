@@ -4,6 +4,7 @@ import { useRoomStore } from "@/stores/room-store";
 import GuessWord from "./guess-word";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
+import { redirect } from "next/navigation";
 
 import { Copy, Check, LogOut } from "lucide-react";
 
@@ -64,7 +65,7 @@ export default function GameBar({ roomCode }: GameBarProps) {
           variant="ghost"
           size="icon"
           onClick={() => {
-            window.location.reload();
+            redirect("/");
           }}
         >
           <LogOut size={20} />

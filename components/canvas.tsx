@@ -23,9 +23,21 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
   const [isDrawing, setIsDrawing] = useState(false);
   const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
   const [brushSize, setBrushSize] = useState(5);
+  const [eraserSize, setEraserSize] = useState(5);
+  const [isErasing, setIsErasing] = useState(false);
+
+  const brushColor = useRef("#000000");
+  const lastPoint = useRef<{ x: number, y: number} | null>(null);
 
   const drawingQueue = useRef<
-    { x0: number; y0: number; x1: number; y1: number }[]
+    {
+      x0: number;
+      y0: number;
+      x1: number;
+      y1: number;
+      brushSize: number;
+      brushcolor: string;
+    }[]
   >([]);
 
   useEffect(() => {
@@ -46,9 +58,11 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
         setContext(ctx);
       }
 
-      drawingQueue.current.forEach(({ x0, y0, x1, y1 }) => {
-        drawLine(x0, y0, x1, y1, false);
-      });
+      drawingQueue.current.forEach(
+        ({ x0, y0, x1, y1, brushcolor, brushSize }) => {
+          drawLine(x0, y0, x1, y1, brushSize, brushcolor, false);
+        }
+      );
       drawingQueue.current = [];
     }
 
@@ -69,7 +83,14 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
         context.clearRect(0, 0, context.canvas.width, context.canvas.height);
       } else {
         console.warn("Context not ready, queuing clear board");
-        drawingQueue.current.push({ x0: 0, y0: 0, x1: 0, y1: 0 });
+        drawingQueue.current.push({
+          x0: 0,
+          y0: 0,
+          x1: 0,
+          y1: 0,
+          brushcolor: "black",
+          brushSize: 5,
+        });
       }
     });
 
@@ -80,17 +101,24 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
         y0,
         x1,
         y1,
+        brushcolor,
+        brushSize,
       }: {
         x0: number;
         y0: number;
         x1: number;
         y1: number;
+        brushcolor: string;
+        brushSize: number;
       }) => {
         if (context) {
-          drawLine(x0, y0, x1, y1, false);
+          if(brushcolor === 'eraser') {
+            brushcolor = '#FFFFFF';
+          }
+          drawLine(x0, y0, x1, y1, brushSize, brushcolor, false);
         } else {
           console.warn("Context not ready, queuing drawing data");
-          drawingQueue.current.push({ x0, y0, x1, y1 });
+          drawingQueue.current.push({ x0, y0, x1, y1, brushcolor, brushSize });
         }
       }
     );
@@ -105,6 +133,12 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
     setIsDrawing(true);
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if(rect) {
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top - 15;
+      lastPoint.current = {x,y};
+    }
     draw(e);
   };
 
@@ -117,6 +151,10 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
     }
   };
 
+  const handleSelectColor = (color: string) => {
+    brushColor.current = color;
+  };
+
   const draw = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
     if (!isDrawing || !context || !canDraw) return;
 
@@ -125,15 +163,23 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
-      drawLine(x, y, x, y);
+      if (isErasing) {
+        erase(x, y);
+      } else {
+        drawLine(lastPoint.current?.x, lastPoint.current?.y, x, y, brushSize, brushColor.current);
+      }
 
       socket.emit("drawing", {
         roomCode,
-        x0: x,
-        y0: y,
+        x0: lastPoint.current.x,
+        y0: lastPoint.current.y,
         x1: x,
         y1: y,
+        brushcolor: isErasing ? 'eraser' : brushColor.current,
+        brushSize: isErasing ? eraserSize : brushSize,
       });
+
+      lastPoint.current = { x, y };
     } else {
       console.error("Canvas rect not available");
     }
@@ -144,6 +190,8 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
     y0: number,
     x1: number,
     y1: number,
+    brushSize: number,
+    brushcolor: string,
     emit = true
   ) => {
     if (!context) {
@@ -151,8 +199,9 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
       return;
     }
 
-    context.strokeStyle = "black";
-    context.lineWidth = 2;
+    context.globalCompositeOperation = "source-over";
+    context.strokeStyle = brushcolor;
+    context.lineWidth = brushSize;
     context.lineCap = "round";
 
     context.beginPath();
@@ -162,12 +211,55 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
     context.closePath();
 
     if (emit) {
-      socket.emit("drawing", { roomCode, x0, y0, x1, y1 });
+      socket.emit("drawing", {
+        roomCode,
+        x0,
+        y0,
+        x1,
+        y1,
+        brushcolor,
+        brushSize,
+      });
     }
   };
+
+  const handleClearCanvas = () => {
+    if (context) {
+      context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+      socket.emit("eraseBoard", { roomCode });
+    }
+  };
+
+  const erase = (x: number, y: number) => {
+    if (!context) return;
+
+    context.globalCompositeOperation = "destination-out";
+    context.beginPath();
+    context.moveTo(lastPoint.current?.x, lastPoint.current?.y);
+    context.lineTo(x, y);
+    context.lineWidth = eraserSize;
+    context.lineCap = "round";
+    context.lineJoin = "round";
+    context.stroke();
+    // context.arc(x, y, brushSize / 2, 0, Math.PI * 2, false);
+    // context.fill();
+  };
+
+  const toggleErasing = () => {
+    setIsErasing(!isErasing);
+  };
+
+  const handleSizeChange = (value: number) => {
+    if(isErasing) {
+      setEraserSize(value);
+    } else {
+      setBrushSize(value);
+    }
+  }
+
   return (
     <div className="w-full h-full rounded-lg space-y-8 relative">
-      <div className="relative w-full bg-white h-[65%] rounded-lg">
+      <div className={`relative w-full bg-white h-[68%] rounded-lg ${isErasing ? "cursor-eraser" : "cursor-draw"}`}>
         <canvas
           ref={canvasRef}
           onMouseDown={startDrawing}
@@ -189,8 +281,9 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
           <div className="flex items-center space-x-4">
             <Button
               size="icon"
-              variant="ghost"
+              variant={isErasing ? "default" : "ghost"}
               className="flex items-center space-x-2"
+              onClick={toggleErasing}
             >
               <Eraser size={16} />
             </Button>
@@ -198,6 +291,7 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
               size="icon"
               variant={"ghost"}
               className="flex items-center space-x-2"
+              onClick={handleClearCanvas}
             >
               <Trash2 size={16} />
             </Button>
@@ -210,8 +304,8 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
               Brush Size
             </label>
             <Slider
-              value={[brushSize]}
-              onValueChange={(value) => setBrushSize(value[0])}
+              value={isErasing ? [eraserSize] : [brushSize]}
+              onValueChange={(value) => handleSizeChange(value[0])}
               max={20}
               step={1}
             />
@@ -230,7 +324,8 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
               <button
                 key={color}
                 title={color}
-                className="w-8 h-8 rounded-full"
+                className={`${brushColor.current === color ? "ring-2 ring-black": "ring-0"} w-8 h-8 rounded-full transition-all duration-200`}
+                onClick={() => handleSelectColor(color)}
               >
                 <Circle
                   className="w-full h-full rounded-full"

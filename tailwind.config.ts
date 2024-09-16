@@ -53,6 +53,10 @@ const config = {
           foreground: "hsl(var(--card-foreground))",
         },
       },
+      cursor: {
+        "draw": "url('/pencil.svg'), grab",
+        "eraser": "url('/eraser.svg'), grab",
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
