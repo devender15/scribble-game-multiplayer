@@ -6,7 +6,6 @@ import { useRoomStore } from "@/stores/room-store";
 
 import { Button } from "./ui/button";
 import { Slider } from "./ui/slider";
-import CountdownClock from "./clock";
 
 import { Eraser, Trash2, Circle } from "lucide-react";
 
@@ -166,19 +165,23 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
       if (isErasing) {
         erase(x, y);
       } else {
-        drawLine(lastPoint.current?.x, lastPoint.current?.y, x, y, brushSize, brushColor.current);
+        if (lastPoint.current) {
+          drawLine(lastPoint.current.x, lastPoint.current.y, x, y, brushSize, brushColor.current);
+        }
       }
 
-      socket.emit("drawing", {
-        roomCode,
-        x0: lastPoint.current.x,
-        y0: lastPoint.current.y,
-        x1: x,
-        y1: y,
-        brushcolor: isErasing ? 'eraser' : brushColor.current,
-        brushSize: isErasing ? eraserSize : brushSize,
-      });
-
+      if(lastPoint.current) {
+        socket.emit("drawing", {
+          roomCode,
+          x0: lastPoint.current.x,
+          y0: lastPoint.current.y,
+          x1: x,
+          y1: y,
+          brushcolor: isErasing ? 'eraser' : brushColor.current,
+          brushSize: isErasing ? eraserSize : brushSize,
+        });
+      }
+      
       lastPoint.current = { x, y };
     } else {
       console.error("Canvas rect not available");
@@ -235,14 +238,14 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
 
     context.globalCompositeOperation = "destination-out";
     context.beginPath();
-    context.moveTo(lastPoint.current?.x, lastPoint.current?.y);
+    if (lastPoint.current) {
+      context.moveTo(lastPoint.current.x, lastPoint.current.y);
+    }
     context.lineTo(x, y);
     context.lineWidth = eraserSize;
     context.lineCap = "round";
     context.lineJoin = "round";
     context.stroke();
-    // context.arc(x, y, brushSize / 2, 0, Math.PI * 2, false);
-    // context.fill();
   };
 
   const toggleErasing = () => {
@@ -269,8 +272,8 @@ export default function DrawingCanvas({ roomCode }: DrawingCanvasProps) {
           className="w-full h-full block"
         />
 
-        <div className="absolute top-2 right-4">
-          <CountdownClock totalSeconds={timeLeft} />
+        <div className="absolute top-2 right-4 h-10 w-10 text-center rounded-full p-2 ring-4 ring-purple-700">
+          {timeLeft}
         </div>
       </div>
 
