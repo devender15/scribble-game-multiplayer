@@ -35,10 +35,9 @@ export default function Room({ roomCode }: { roomCode: string }) {
 
   const handleUserLeave = useCallback(() => {
     if (socket) {
-      console.log("user left!!");
       socket.emit("remove-user", { roomCode, username: name });
       deleteUser(name).catch((error) => {
-        toast(error.message);
+        toast.info(error.message);
       });
       socket.disconnect();
       handleFetchRoomUsers(roomCode, setRoomUsers, socket);
@@ -52,7 +51,6 @@ export default function Room({ roomCode }: { roomCode: string }) {
   useEffect(() => {
     if (!socket || isInitialized) return;
 
-    console.log("initializing room");
     setIsInitialized(true);
 
     socket.emit("add-user", { roomCode, username: name });
@@ -60,13 +58,13 @@ export default function Room({ roomCode }: { roomCode: string }) {
     socket.on("newUserJoined", ({ newName }: { newName: string }) => {
       const user = name === newName ? "You" : newName;
 
-      toast(`${user} joined the room`);
+      toast.info(`${user} joined the room`);
 
       handleFetchRoomUsers(roomCode, setRoomUsers, socket);
     });
 
     socket.on("userLeft", ({ message }: { message: string }) => {
-      toast(message);
+      toast.info(message);
       handleFetchRoomUsers(roomCode, setRoomUsers, socket);
     });
 

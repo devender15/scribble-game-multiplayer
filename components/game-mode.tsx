@@ -6,7 +6,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { toast } from "sonner";
-import { Separator } from "@/components/ui/separator"
 
 import { useUserStore } from "@/stores/user-store";
 
@@ -26,14 +25,26 @@ export default function GameMode() {
 
   const handleCreateRoom = async () => {
     try {
-      const roomCode = await createRoom(name);
-      router.push(`/room?code=${roomCode}`);
-      toast("room created!", {
-        action: {
-          label: "okay",
-          onClick: () => {
-            toast.dismiss();
-          },
+      // const roomCode = await createRoom(name);
+      // router.push(`/room?code=${roomCode}`);
+      // toast("room created!", {
+      //   action: {
+      //     label: "okay",
+      //     onClick: () => {
+      //       toast.dismiss();
+      //     },
+      //   },
+      // });
+
+      toast.promise(createRoom(name), {
+        loading: "creating room...",
+        success: (roomCode) => {
+          router.push(`/room?code=${roomCode}`);
+          return "room created!";
+        },
+        error: (error) => {
+          toast.error(error);
+          return "error!";
         },
       });
     } catch (error: any) {

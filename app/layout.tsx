@@ -26,7 +26,7 @@ export default function RootLayout({
       <body className={roboto.className}>
         <SocketContextProvider>
           {children}
-          <Toaster />
+          <Toaster richColors position="bottom-left" />
         </SocketContextProvider>
       </body>
     </html>
