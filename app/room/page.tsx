@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 
 import { redirect } from "next/navigation";
 
-import Header from "@/components/header";
+import ModalProvider from "@/providers/modal-provider";
 import Room from "@/components/room";
 
 export default async function Page({
@@ -27,8 +27,11 @@ export default async function Page({
   }
 
   return (
-    <div className="max-h-screen h-screen overflow-hidden max-w-[100vw]">
-      <Room roomCode={roomCode as string} />
-    </div>
+    <>
+      <div className="max-h-screen h-screen overflow-hidden max-w-[100vw]">
+        <Room roomCode={roomCode as string} />
+      </div>
+      <ModalProvider />
+    </>
   );
 }

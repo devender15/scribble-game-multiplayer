@@ -5,8 +5,6 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { SocketContextProvider } from "@/providers/socket-provider";
 
-import ModalProvider from "@/providers/modal-provider";
-
 const roboto = Roboto({
   display: "swap",
   weight: ["400", "700"],
@@ -28,7 +26,6 @@ export default function RootLayout({
       <body className={roboto.className}>
         <SocketContextProvider>
           {children}
-          <ModalProvider />
           <Toaster />
         </SocketContextProvider>
       </body>

@@ -4,7 +4,7 @@ import { useRoomStore } from "@/stores/room-store";
 import GuessWord from "./guess-word";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import { Copy, Check, LogOut } from "lucide-react";
 
@@ -14,6 +14,7 @@ type GameBarProps = {
 
 export default function GameBar({ roomCode }: GameBarProps) {
   const [copied, setCopied] = useState(false);
+  const router = useRouter();
 
   const { selectedWord, canDraw, drawerSelectedWord } = useRoomStore();
 
@@ -65,7 +66,7 @@ export default function GameBar({ roomCode }: GameBarProps) {
           variant="ghost"
           size="icon"
           onClick={() => {
-            redirect("/");
+            router.push("/");
           }}
         >
           <LogOut size={20} />

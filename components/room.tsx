@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback, useState } from "react";
 
 import { useUserStore } from "@/stores/user-store";
 import { useSocket } from "@/providers/socket-provider";
@@ -31,12 +31,29 @@ export default function Room({ roomCode }: { roomCode: string }) {
     setFinalScores,
   } = useRoomStore();
 
-  // useEffect(() => {
-  //   if (!name) redirect("/");
-  // }, [name]);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  const handleUserLeave = useCallback(() => {
+    if (socket) {
+      console.log("user left!!");
+      socket.emit("remove-user", { roomCode, username: name });
+      deleteUser(name).catch((error) => {
+        toast(error.message);
+      });
+      socket.disconnect();
+      handleFetchRoomUsers(roomCode, setRoomUsers);
+    }
+  }, [socket, name, roomCode, setRoomUsers]);
 
   useEffect(() => {
-    if (!socket) return;
+    if (!name) redirect("/");
+  }, [name]);
+
+  useEffect(() => {
+    if (!socket || isInitialized) return;
+
+    console.log("initializing room");
+    setIsInitialized(true);
 
     socket.emit("add-user", { roomCode, username: name });
 
@@ -78,25 +95,38 @@ export default function Room({ roomCode }: { roomCode: string }) {
       setOpen("game-over");
     });
 
-    const handleUserLeave = () => {
-      socket.emit("remove-user", { roomCode, username: name });
-
-      deleteUser(name).catch((error) => {
-        toast(error.message);
-      });
-
-      socket.disconnect();
-
-      handleFetchRoomUsers(roomCode, setRoomUsers);
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      handleUserLeave();
+      e.preventDefault();
+      e.returnValue = "";
     };
 
-    window.addEventListener("beforeunload", handleUserLeave);
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
-      // handleUserLeave();
-      window.removeEventListener("beforeunload", handleUserLeave);
+      if (isInitialized) {
+        handleUserLeave();
+        window.removeEventListener("beforeunload", handleBeforeUnload);
+        socket.off("newUserJoined");
+        socket.off("userLeft");
+        socket.off("drawerSelectedWord");
+        socket.off("roundRecap");
+        socket.off("nextLevel");
+        socket.off("gameOver");
+      }
     };
-  }, [socket, name, roomCode]);
+  }, [
+    socket,
+    name,
+    roomCode,
+    handleUserLeave,
+    setRoomUsers,
+    setOpen,
+    setDrawerSelectedWord,
+    setScores,
+    setCurrentLevel,
+    setFinalScores,
+  ]);
 
   useEffect(() => {
     if (canDraw) {
