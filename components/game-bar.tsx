@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { useRoomStore } from "@/stores/room-store";
+import { useUserStore } from "@/stores/user-store";
 import GuessWord from "./guess-word";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -17,6 +18,7 @@ export default function GameBar({ roomCode }: GameBarProps) {
   const router = useRouter();
 
   const { selectedWord, canDraw, drawerSelectedWord } = useRoomStore();
+  const { roomUsers } = useUserStore();
 
   const handleCopy = () => {
     navigator.clipboard.writeText(roomCode);
@@ -59,7 +61,7 @@ export default function GameBar({ roomCode }: GameBarProps) {
         </p>
 
         <Badge variant="secondary" className="bg-green-100 text-green-800">
-          Online: 3
+          Online: {roomUsers.length}
         </Badge>
 
         <Button
