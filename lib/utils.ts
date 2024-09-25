@@ -19,11 +19,16 @@ export function generateRoomCode() {
 
 export async function handleFetchRoomUsers(
   roomCode: string,
-  setRoomUsers: (users: User[]) => void
+  setRoomUsers: (users: User[]) => void,
+  socket: any,
 ) {
   try {
     const roomUsers = await fetchRoomUsers(roomCode);
     setRoomUsers(roomUsers);
+
+    if(socket) {
+      socket.emit("users-in-room", { roomCode, roomUsers });
+    }
 
     return roomUsers;
   } catch (error) {

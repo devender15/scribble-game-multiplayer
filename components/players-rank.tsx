@@ -32,7 +32,7 @@ export default function PlayersRank({ roomCode }: PlayersRankProps) {
   const { socket } = useSocket();
 
   useEffect(() => {
-    handleFetchRoomUsers(roomCode, setRoomUsers);
+    handleFetchRoomUsers(roomCode, setRoomUsers, socket);
   }, []);
 
   useEffect(() => {

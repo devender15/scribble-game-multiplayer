@@ -17,12 +17,14 @@ app.prepare().then(() => {
 
   const io = new Server(server);
 
+  // globals
   const rooms = {};
   const selectedWordObj = {};
   let scores = {};
+  let usersInRoom =  {};
   let correctGuesses = {};
-  let currentDrawer = {};
-  let currentDrawerName = "";
+  let currentDrawer = {}; // it scores socket id
+  let currentDrawerName = ""; // it scores username
   let countdowns = {};
   const playersPlayed = [];
   const totalLevels = 2;
@@ -30,6 +32,24 @@ app.prepare().then(() => {
 
   io.on("connection", (socket) => {
     console.log("a user connected");
+
+    function deductPointsOfAllPlayers(roomCode) { 
+      const roomUsers = usersInRoom[roomCode];
+      roomUsers.forEach((username) => {
+        if (scores[username] > 0) {
+          scores[username] -= 5;
+        }
+      });
+    }
+
+    function deductPointsWhoDidNotGuess(roomCode) {
+      const roomUsers = usersInRoom[roomCode];
+      roomUsers.forEach((username) => {
+        if (!correctGuesses[roomCode][username] && scores[username] > 0 && username !== currentDrawerName) {
+          scores[username] -= 5;
+        }
+      });
+    }
 
     function startRound(roomCode) {
       let timeLeft = 60;
@@ -106,6 +126,22 @@ app.prepare().then(() => {
         correctGuesses: correctGuesses[roomCode],
       });
 
+      // logic for deducting points
+      let playersWhoDidNotGuess = [];
+
+      for (let username in correctGuesses[roomCode]) {
+        if (!correctGuesses[roomCode][username]) {
+          playersWhoDidNotGuess.push(username);
+        }
+      }
+
+      if (playersWhoDidNotGuess.length === io.sockets.adapter.rooms.get(roomCode).size) {
+        deductPointsOfAllPlayers(roomCode);
+      } else {
+        deductPointsWhoDidNotGuess(roomCode);
+      }
+      
+      // updating scores of those who guessed correctly
       for (let username in correctGuesses[roomCode]) {
         scores[username] += correctGuesses[roomCode][username];
       }
@@ -261,6 +297,22 @@ app.prepare().then(() => {
         message: `${username} has left the room`,
       });
     });
+
+    socket.on("users-in-room", (data) => {
+      const { roomCode, roomUsers } = data;
+
+      if(!usersInRoom[roomCode]) {
+        usersInRoom[roomCode] = [];
+      }
+
+      roomUsers.forEach((user) => {
+        const { name } = user;
+
+        if(!usersInRoom[roomCode].includes(name)) {
+          usersInRoom[roomCode].push(name);
+        }
+      });
+    })
 
     socket.on("disconnect", () => {
       console.log("user disconnected");

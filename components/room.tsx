@@ -41,7 +41,7 @@ export default function Room({ roomCode }: { roomCode: string }) {
         toast(error.message);
       });
       socket.disconnect();
-      handleFetchRoomUsers(roomCode, setRoomUsers);
+      handleFetchRoomUsers(roomCode, setRoomUsers, socket);
     }
   }, [socket, name, roomCode, setRoomUsers]);
 
@@ -62,12 +62,12 @@ export default function Room({ roomCode }: { roomCode: string }) {
 
       toast(`${user} joined the room`);
 
-      handleFetchRoomUsers(roomCode, setRoomUsers);
+      handleFetchRoomUsers(roomCode, setRoomUsers, socket);
     });
 
     socket.on("userLeft", ({ message }: { message: string }) => {
       toast(message);
-      handleFetchRoomUsers(roomCode, setRoomUsers);
+      handleFetchRoomUsers(roomCode, setRoomUsers, socket);
     });
 
     socket.on(
