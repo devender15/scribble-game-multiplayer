@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { useRoomStore } from "@/stores/room-store";
 import { useUserStore } from "@/stores/user-store";
@@ -6,6 +6,8 @@ import GuessWord from "./guess-word";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { useRouter } from "next/navigation";
+import { useSocket } from "@/providers/socket-provider";
+import deleteUser from "@/actions/delete-user";
 
 import { Copy, Check, LogOut } from "lucide-react";
 
@@ -16,9 +18,10 @@ type GameBarProps = {
 export default function GameBar({ roomCode }: GameBarProps) {
   const [copied, setCopied] = useState(false);
   const router = useRouter();
+  const { socket } = useSocket();
 
   const { selectedWord, canDraw, drawerSelectedWord } = useRoomStore();
-  const { roomUsers } = useUserStore();
+  const { roomUsers, name } = useUserStore();
 
   const handleCopy = () => {
     navigator.clipboard.writeText(roomCode);
@@ -30,6 +33,16 @@ export default function GameBar({ roomCode }: GameBarProps) {
       setCopied(false);
     }, 1000);
   };
+
+  const handleUserLeave = useCallback(() => {
+    if (socket) {
+      socket.emit("remove-user", { roomCode, username: name });
+      deleteUser(name).catch((error) => {
+        toast.info(error.message);
+      });
+      socket.disconnect();
+    }
+  }, [socket, name, roomCode]);
 
   return (
     <div className="bg-white w-full h-16 py-2 px-4 flex justify-between items-center">
@@ -69,6 +82,7 @@ export default function GameBar({ roomCode }: GameBarProps) {
           size="icon"
           onClick={() => {
             router.push("/");
+            handleUserLeave();
           }}
         >
           <LogOut size={20} />
