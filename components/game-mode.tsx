@@ -25,17 +25,6 @@ export default function GameMode() {
 
   const handleCreateRoom = async () => {
     try {
-      // const roomCode = await createRoom(name);
-      // router.push(`/room?code=${roomCode}`);
-      // toast("room created!", {
-      //   action: {
-      //     label: "okay",
-      //     onClick: () => {
-      //       toast.dismiss();
-      //     },
-      //   },
-      // });
-
       toast.promise(createRoom(name), {
         loading: "creating room...",
         success: (roomCode) => {
@@ -56,21 +45,21 @@ export default function GameMode() {
     <div className="w-full h-full space-y-10">
       <CustomizePlayer />
 
-      <div className="flex gap-x-8 items-center w-full h-52 text-pink-800 px-16">
+      <div className="flex flex-col gap-y-4 md:flex-row md:gap-x-8 items-center w-full h-52 text-pink-800 px-16">
         {mode === "join" ? (
           <JoinRoom setMode={setMode} />
         ) : (
           <>
             {" "}
             <button
-              className="basis-1/2 flex  rounded-xl shadow-sm justify-center items-center h-full bg-pink-400/30 hover:bg-pink-100/20 transition-all duration-200 disabled:bg-gray-600/10 disabled:text-gray-400"
+              className="w-full md:basis-1/2 flex  rounded-xl shadow-sm justify-center items-center h-full bg-pink-400/30 hover:bg-pink-100/20 transition-all duration-200 disabled:bg-gray-600/10 disabled:text-gray-400"
               onClick={() => handleToggleMode("join")}
               disabled={validationStatus !== "success" || !name}
             >
               join a private room
             </button>
             <button
-              className="basis-1/2 flex  rounded-xl shadow-sm justify-center items-center h-full bg-pink-400/30 hover:bg-pink-100/20 transition-all duration-200 disabled:bg-gray-600/10 disabled:text-gray-400"
+              className="w-full md:basis-1/2 flex  rounded-xl shadow-sm justify-center items-center h-full bg-pink-400/30 hover:bg-pink-100/20 transition-all duration-200 disabled:bg-gray-600/10 disabled:text-gray-400"
               onClick={handleCreateRoom}
               disabled={validationStatus !== "success" || !name}
             >
